@@ -13,11 +13,10 @@
  *    <hostname> IP address or name of a host that runs the server
  *    <portnum> the numeric port number on which the server listens
  */
-int receiveResponse(int sockFd, struct sockaddr_in *, int size);
-void printResponse(struct sockaddr_in *);
-int amIPeerZero(int sockFd, struct sockaddr_in *, int size);
+int receiveResponse(int sockFd, struct sockaddr_in *response, int size);
+void printResponse(struct sockaddr_in *response);
+int amIPeerZero(int sockFd, struct sockaddr_in *response, int size);
 fileInfoP firstReadWrite(int P0, int sockfd, int count);
-
 
  /*
   * A note
@@ -25,7 +24,7 @@ fileInfoP firstReadWrite(int P0, int sockfd, int count);
 int main(int argc, char** argv) 
 {
 	int  sockfd, P0;
-	struct sockaddr_in response;
+	struct sockaddr_in response[2];
 	char message[256];
 
 	if (argc != 4) 

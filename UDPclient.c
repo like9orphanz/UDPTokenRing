@@ -29,6 +29,7 @@
 int receiveResponse(int sockFd, struct sockaddr_in *, int size);
 void printResponse(struct sockaddr_in *);
 int amIPeerZero(int sockFd, struct sockaddr_in *, int size);
+int getAllPeerInfo(int sockFd, struct sockaddr_in *, int size);
 int doIHoldTheToken(char *flag);
 void createFile();
 void removeFile();
@@ -103,10 +104,10 @@ int sendRequest(int sockFD, char * request, char * serverName, int serverPort)
  * 
  * return   - 0, if no error; otherwise, a negative number indicating the error
  */
-int receiveResponse(int sockFD, struct sockaddr_in *response, int size)
+int receiveResponse(int sockFd, struct sockaddr_in *response, int size)
 {
 	int errorCheck = 0;
-	errorCheck = recvfrom(sockFD, (void *)response, size, 0, NULL, NULL);
+	errorCheck = recvfrom(sockFd, (void *)response, size, 0, NULL, NULL);
 	return errorCheck;	
 }
 
@@ -133,6 +134,19 @@ int closeSocket(int sockFD)
 	int errorCheck = 0;
 	errorCheck = close(sockFD);
 	return errorCheck;
+}
+
+int getAllPeerInfo(int sockFd, struct sockaddr_in *respone, int size)
+{
+	if (receiveRepsonse(sockFd, response[0], size) < 0)
+		return -1;
+	if (receiveResponse(sockFd, response[1], size) < 0)
+		return -1;
+	printf("At 0:\n");
+	printResponse(response[0]);
+	printf("At 1:\n");
+	printResponse(response[1]);
+	return 0;
 }
 
 /*

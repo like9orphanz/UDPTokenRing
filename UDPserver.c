@@ -57,11 +57,9 @@ int main(int argc, char** argv)
 	int ls;
 	//Number of bytes to send or reciever
 	int len = 0;
-	//Size of waiting clients
-	int waitSize = 16;
+	int numberHosts = atoi(argv[2]) ;
 	//Server address, and client address
-	struct sockaddr_in serverAddress, clientAddress;
-	struct in_addr a;
+	struct sockaddr_in serverAddress, clientAddress[numberHosts];
 	socklen_t addr_size;
 	addr_size = sizeof(clientAddress);
 	char sentMessage[256];
@@ -70,7 +68,6 @@ int main(int argc, char** argv)
 
 	// Bind the socket, assign numberHosts
 	ls = ListenSockCreation(atoi(argv[1]), &serverAddress);
-	int numberHosts = atoi(argv[2]) ;
 
 	printHostInfo();
 	portInfo(&serverAddress, ls);
@@ -79,48 +76,29 @@ int main(int argc, char** argv)
 	
 	for (i = 0 ; i < numberHosts ; i++) {
 		bzero(buffer, 256);
-		len = recvfrom(ls, buffer, sizeof(buffer), 0, (struct sockaddr*)&clientAddress, &addr_size);
+		len = recvfrom(ls, buffer, sizeof(buffer), 0, (struct sockaddr*)&clientAddress[i], &addr_size);
 	
-		fprintf(stderr, "Connected with %s at port %d\n", inet_ntoa(clientAddress.sin_addr), htons(clientAddress.sin_port));
+		fprintf(stderr, "Connected with %s at port %d\n", inet_ntoa(clientAddress[i].sin_addr), htons(clientAddress[i].sin_port));
 		if(len < 0)
 			fprintf(stderr, "ERROR in recvfrom\n");
 
 		if((processInfo(buffer, sentMessage)) == 0)
-			sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress, sizeof(struct sockaddr_in));
+			sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress[i], sizeof(struct sockaddr_in));
 		else {
 			strcpy(sentMessage, "Shutting Down");
-			sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress, sizeof(struct sockaddr_in));
+			sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress[i], sizeof(struct sockaddr_in));
 			close(ls);
 			return(EXIT_SUCCESS);
 		}
 	}
 
 	close(ls);
-	return(EXIT_SUCCESS);
-	//infinite loop that recieves a message for a UDP client and process the message and responds accordingly
-	/*while(1)
-	{
-		bzero(buffer, 256);
-		len = recvfrom(ls, buffer, sizeof(buffer), 0, (struct sockaddr*)&clientAddress, &addr_size);
 
-		//PRINTS OUT INFO ABOUT THE CLIENT THAT SENT THE MESSAGE
-		fprintf(stderr, "Connected with %s at port %d\n", inet_ntoa(clientAddress.sin_addr), htons(clientAddress.sin_port));
-		if(len < 0)
-			fprintf(stderr, "ERROR in recvfrom\n");
-
-		if((processInfo(buffer, sentMessage)) == 0)
-			sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress, sizeof(struct sockaddr_in));
-		else
-		{
-			strcpy(sentMessage, "Shutting Down");
-			sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress, sizeof(struct sockaddr_in));
-			close(ls);
-			return(EXIT_SUCCESS);
-		}
+	for (i = 0 ; i < numberHosts ; i++) {
+		printf("Client address %d is %s\n", i, inet_ntoa(clientAddress[i].sin_addr));
+		printf("Port number %d is %d\n", i, htons(clientAddress[i].sin_port));
 	}
-    close(ls);
 	return(EXIT_SUCCESS);
-	*/
 }
 /*
  * Prints out information for the Server

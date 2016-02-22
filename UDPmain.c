@@ -32,9 +32,10 @@ int main(int argc, char** argv)
 		exit (1);
 	}
 	
-	printf ("Enter a message: ");
-	fgets (message, 256, stdin);
+	//printf ("Enter a message: ");
+	//fgets (message, 256, stdin);
 	// replace new line with null character
+	strcpy(message,"<echo>ey</echo>");
 	message[strlen(message)-1] = '\0';
 	
 	// send request to server

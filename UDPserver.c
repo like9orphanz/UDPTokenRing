@@ -1,7 +1,7 @@
 /* 
- * File:   TCPserver.c
+ * File:   UDPserver.c
  * Author: Joshua Wright
- *	   Sam Stein
+ *	   	   Sam Stein
  *
  * Created on January 13, 2016, 6:08 PM
  */
@@ -47,9 +47,9 @@ void portInfo(struct sockaddr_in *serverAddress, int sockfd);
  */
 int main(int argc, char** argv)
 {
-	if(argc != 2)
+	if(argc != 3)
         {
-                fprintf(stderr, "Please input <port>\n");
+                fprintf(stderr, "Please input <port> <numberHosts>\n");
                 exit(1);
         }
 
@@ -66,18 +66,39 @@ int main(int argc, char** argv)
 	addr_size = sizeof(clientAddress);
 	char sentMessage[256];
 	int errorCheck = 0;
+	int i;
 
-	//bind the socket
+	// Bind the socket, assign numberHosts
 	ls = ListenSockCreation(atoi(argv[1]), &serverAddress);
+	int numberHosts = atoi(argv[2]) ;
 
 	printHostInfo();
 	portInfo(&serverAddress, ls);
 
 	char buffer[256];
-	bzero(buffer, 256);
 	
+	for (i = 0 ; i < numberHosts ; i++) {
+		bzero(buffer, 256);
+		len = recvfrom(ls, buffer, sizeof(buffer), 0, (struct sockaddr*)&clientAddress, &addr_size);
+	
+		fprintf(stderr, "Connected with %s at port %d\n", inet_ntoa(clientAddress.sin_addr), htons(clientAddress.sin_port));
+		if(len < 0)
+			fprintf(stderr, "ERROR in recvfrom\n");
+
+		if((processInfo(buffer, sentMessage)) == 0)
+			sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress, sizeof(struct sockaddr_in));
+		else {
+			strcpy(sentMessage, "Shutting Down");
+			sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress, sizeof(struct sockaddr_in));
+			close(ls);
+			return(EXIT_SUCCESS);
+		}
+	}
+
+	close(ls);
+	return(EXIT_SUCCESS);
 	//infinite loop that recieves a message for a UDP client and process the message and responds accordingly
-	while(1)
+	/*while(1)
 	{
 		bzero(buffer, 256);
 		len = recvfrom(ls, buffer, sizeof(buffer), 0, (struct sockaddr*)&clientAddress, &addr_size);
@@ -99,6 +120,7 @@ int main(int argc, char** argv)
 	}
     close(ls);
 	return(EXIT_SUCCESS);
+	*/
 }
 /*
  * Prints out information for the Server
@@ -144,7 +166,7 @@ void portInfo(struct sockaddr_in *serverAddress, int sockfd)
  */
 int processInfo(char *buffer, char *rcvString)
 {
-        // Initialize
+    // Initialize
 	int errorCheck = 0, response = 0;  
 	int length = strlen(buffer);
 	if(length > 256)

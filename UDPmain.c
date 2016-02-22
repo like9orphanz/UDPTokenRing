@@ -12,6 +12,11 @@
  *    <hostname> IP address or name of a host that runs the server
  *    <portnum> the numeric port number on which the server listens
  */
+
+
+ /*
+  * A note
+  */
 int main(int argc, char** argv) 
 {
 	int  sockfd;

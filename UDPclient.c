@@ -99,8 +99,28 @@ int receiveResponse(int sockFD, char * response, int size)
  *
  */
 void printResponse(char * response)
-{
-	printf("Response is: %s\n", response);
+{	
+	int i = 0;
+	int a = 0;
+	int flag = 0;
+	char ip[256];
+	char port[256];
+	while (response[i] != '\0') {
+		if (response[i] == ' ') {
+			flag = 1;
+			ip[i] = '\0';
+		}
+		
+		if (flag == 0) {
+			ip[i] = response[i];
+		}
+		else {
+			port[a] = response[i];
+			a++;
+		}
+		i++;
+	}
+	printf("Response is: %s %d\n", ip, atoi(port));
 }
 
 /*

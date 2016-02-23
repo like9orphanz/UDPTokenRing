@@ -53,10 +53,18 @@ int main(int argc, char** argv)
 		closeSocket (sockfd);
 		exit (1);
 	}
-	closeSocket (sockfd);
 	
 	// display response from server
 	printResponse(response);
+	
+	if (receiveResponse(sockfd, response, 256) < 0) {
+		closeSocket (sockfd);
+		exit (1);
+	}
+
+	printResponse(response);
+
+	closeSocket (sockfd);
 
 	exit(0);
 }

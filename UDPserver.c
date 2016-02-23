@@ -39,6 +39,8 @@ int loadAvg(char * buffer);
 void changeLoadAvg(char * buffer, char * rcvString);
 int getLoad(char *store);
 void portInfo(struct sockaddr_in *serverAddress, int sockfd);
+void sendNeighbors(int ls, int numHosts, struct sockaddr_in *clientAddress);
+void neighborSpecificInfo(int ls, struct sockaddr_in *clientAddress, int whichNeighbor, int whichHost);
 /*
  *
  *
@@ -74,30 +76,33 @@ int main(int argc, char** argv)
 
 	char buffer[256];
 	
-	for (i = 0 ; i < numberHosts ; i++) {
+	for (i = 0 ; i < numberHosts ; i++) 
+	{
 		bzero(buffer, 256);
 		len = recvfrom(ls, buffer, sizeof(buffer), 0, (struct sockaddr*)&clientAddress[i], &addr_size);
-	
 		fprintf(stderr, "Connected with %s at port %d\n", inet_ntoa(clientAddress[i].sin_addr), htons(clientAddress[i].sin_port));
 		if(len < 0)
 			fprintf(stderr, "ERROR in recvfrom\n");
 
-		if((processInfo(buffer, sentMessage)) == 0)
-			sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress[i], sizeof(struct sockaddr_in));
-		else {
-			strcpy(sentMessage, "Shutting Down");
-			sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress[i], sizeof(struct sockaddr_in));
-			close(ls);
-			return(EXIT_SUCCESS);
-		}
+		//if((processInfo(buffer, sentMessage)) == 0)
+		//	sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress[i], sizeof(struct sockaddr_in));
+		//else {
+		//	strcpy(sentMessage, "Shutting Down");
+		//	sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress[i], sizeof(struct sockaddr_in));
+		//	close(ls);
+		//	return(EXIT_SUCCESS);
+		//}
 	}
 
-	close(ls);
-
-	for (i = 0 ; i < numberHosts ; i++) {
+	for (i = 0; i < numberHosts; i++) 
+	{
 		printf("Client address %d is %s\n", i, inet_ntoa(clientAddress[i].sin_addr));
 		printf("Port number %d is %d\n", i, htons(clientAddress[i].sin_port));
 	}
+
+	sendNeighbors(ls, numberHosts, clientAddress);
+	
+	close(ls);
 	return(EXIT_SUCCESS);
 }
 /*
@@ -107,6 +112,42 @@ int main(int argc, char** argv)
  * 	IP Address
  *
  */
+void sendNeighbors(int ls, int numHosts, struct sockaddr_in *clientAddress)
+{
+	int i;
+	int errorCheck = 0;
+
+	for(i = 0; i < numHosts; i++)
+	{
+		if (i == 0) {
+			neighborSpecificInfo(ls, clientAddress, numHosts - 1, i);  // left host
+			neighborSpecificInfo(ls, clientAddress, 1, i);  // right host
+		}
+		if (i == numHosts - 1) {
+			neighborSpecificInfo(ls, clientAddress, numHosts - 2, i);  // left host
+			neighborSpecificInfo(ls, clientAddress, 0, i);  // right host
+		}
+		else {
+			neighborSpecificInfo(ls, clientAddress, i - 1, i);  // left host
+			neighborSpecificInfo(ls, clientAddress, i + 1, i);  // right host
+		}
+	}
+}
+
+void neighborSpecificInfo(int ls, struct sockaddr_in *clientAddress, int whichNeighbor, int whichHost)
+{
+	char *space = " ";
+	char buffer[256];
+	bzero(buffer, 256);
+	char *ports = (char *)&clientAddress[whichNeighbor].sin_port;
+
+	strcat(buffer, inet_ntoa(clientAddress[whichNeighbor].sin_addr));
+	strcat(buffer, space);
+	strcat(buffer, ports);
+
+	if (sendto(ls,buffer,strlen(buffer), 0, (const struct sockaddr *)&clientAddress[whichHost], sizeof(clientAddress[whichHost])))
+		;
+}
 void printHostInfo()
 {
         char hostname[1024];

@@ -119,15 +119,26 @@ void sendNeighbors(int ls, int numHosts, struct sockaddr_in *clientAddress)
 
 	for(i = 0; i < numHosts; i++)
 	{
-		if (i == 0) {
+		if (i == 0 && numHosts != 2) 
+		{
 			neighborSpecificInfo(ls, clientAddress, numHosts - 1, i);  // left host
 			neighborSpecificInfo(ls, clientAddress, 1, i);  // right host
 		}
-		if (i == numHosts - 1) {
+		if (i == 0 && numHosts == 2) 
+		{
+			neighborSpecificInfo(ls, clientAddress, 1, i); // left host
+		}
+		if (i == 1 && numHosts == 2)
+		{
+			neighborSpecificInfo(ls, clientAddress, 0, i); // right host
+		}
+		if (i == numHosts - 1 && numHosts != 2) 
+		{
 			neighborSpecificInfo(ls, clientAddress, 0, i);  // left host
 			neighborSpecificInfo(ls, clientAddress, numHosts - 2, i);  // right host
 		}
-		else {
+		else 
+		{
 			neighborSpecificInfo(ls, clientAddress, i - 1, i);  // left host
 			neighborSpecificInfo(ls, clientAddress, i + 1, i);  // right host
 		}

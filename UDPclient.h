@@ -11,8 +11,6 @@ int createSocket();
 
 int sendRequest(int, char *, char *, int);
 
-int receiveResponse(int, char *, int);
-
 void sendResponse(char *);
 
 int closeSocket(int);

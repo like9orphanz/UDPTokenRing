@@ -23,7 +23,8 @@
  *		fit the criteria that the server replies with
  *
  */
-
+int receiveResponse(int sockFd, struct sockaddr_in *, int size);
+void printResponse(struct sockaddr_in *);
 /*
  * return value - the socket identifier or a negative number indicating the error 
  * 		  for creating a socket
@@ -85,10 +86,10 @@ int sendRequest(int sockFD, char * request, char * serverName, int serverPort)
  * 
  * return   - 0, if no error; otherwise, a negative number indicating the error
  */
-int receiveResponse(int sockFD, char * response, int size)
+int receiveResponse(int sockFD, struct sockaddr_in *response, int size)
 {
 	int errorCheck = 0;
-	errorCheck = recvfrom(sockFD, response, size, 0, NULL, NULL);
+	errorCheck = recvfrom(sockFD, (void *)response, size, 0, NULL, NULL);
 	return errorCheck;	
 }
 
@@ -98,29 +99,10 @@ int receiveResponse(int sockFD, char * response, int size)
  * response - the server's response as an XML formatted string
  *
  */
-void printResponse(char * response)
+void printResponse(struct sockaddr_in *response)
 {	
-	int i = 0;
-	int a = 0;
-	int flag = 0;
-	char ip[256];
-	char port[256];
-	while (response[i] != '\0') {
-		if (response[i] == ' ') {
-			flag = 1;
-			ip[i] = '\0';
-		}
-		
-		if (flag == 0) {
-			ip[i] = response[i];
-		}
-		else {
-			port[a] = response[i];
-			a++;
-		}
-		i++;
-	}
-	printf("Response is: %s %d\n", ip, atoi(port));
+	printf("Neighbor ip Address is: %s and port number is %d\n", inet_ntoa(response->sin_addr), htons(response->sin_port));
+
 }
 
 /*

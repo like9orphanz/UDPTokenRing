@@ -20,7 +20,7 @@
 int main(int argc, char** argv) 
 {
 	int  sockfd;
-	char response[256];
+	struct sockaddr response;
 	char message[256];
 
 	if (argc != 3) {
@@ -49,20 +49,30 @@ int main(int argc, char** argv)
 		exit (1);
 	}
 
-	if (receiveResponse(sockfd, response, 256) < 0) {
+	if (receiveResponse(sockfd, &response, 256) < 0) {
 		closeSocket (sockfd);
 		exit (1);
 	}
 	
 	// display response from server
+<<<<<<< HEAD
+	printResponse(&response);
+	
+	if (receiveResponse(sockfd, &response, 256) < 0) {
+=======
 	printResponse(response);
 	
 	if (receiveResponse(sockfd, response, 256) < 0) {
+>>>>>>> origin/master
 		closeSocket (sockfd);
 		exit (1);
 	}
 
+<<<<<<< HEAD
+	printResponse(&response);
+=======
 	printResponse(response);
+>>>>>>> origin/master
 
 	closeSocket (sockfd);
 

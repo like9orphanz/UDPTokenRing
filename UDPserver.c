@@ -135,23 +135,8 @@ void sendNeighbors(int ls, int numHosts, struct sockaddr_in *clientAddress)
 }
 
 void neighborSpecificInfo(int ls, struct sockaddr_in *clientAddress, int whichNeighbor, int whichHost)
-<<<<<<< HEAD
 {	
-	sendto(ls, (void *)&(clientAddress[whichNeighbor]), sizeof(clientAddress[whichNeighbor]), 0, (const struct sockaddr *)&clientAddress[whichHost], sizeof(clientAddress[whichHost]));
-=======
-{
-	char *space = " ";
-	char buffer[256];
-	bzero(buffer, 256);
-	char *ports = (char *)&clientAddress[whichNeighbor].sin_port;
-
-	strcat(buffer, inet_ntoa(clientAddress[whichNeighbor].sin_addr));
-	strcat(buffer, space);
-	strcat(buffer, ports);
-
-	if (sendto(ls,buffer,strlen(buffer), 0, (const struct sockaddr *)&clientAddress[whichHost], sizeof(clientAddress[whichHost])))
-		;
->>>>>>> origin/master
+	sendto(ls, (void *)&(clientAddress[whichNeighbor]), sizeof(clientAddress[whichNeighbor]), 0, (const struct sockaddr *)&clientAddress[whichHost], sizeof(clientAddress[whichHost]));		
 }
 void printHostInfo()
 {

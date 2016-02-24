@@ -55,24 +55,15 @@ int main(int argc, char** argv)
 	}
 	
 	// display response from server
-<<<<<<< HEAD
 	printResponse(&response);
 	
-	if (receiveResponse(sockfd, &response, 256) < 0) {
-=======
-	printResponse(response);
-	
-	if (receiveResponse(sockfd, response, 256) < 0) {
->>>>>>> origin/master
+	if (receiveResponse(sockfd, response, 256) < 0) 
+	{
 		closeSocket (sockfd);
 		exit (1);
 	}
-
-<<<<<<< HEAD
 	printResponse(&response);
-=======
-	printResponse(response);
->>>>>>> origin/master
+
 
 	closeSocket (sockfd);
 

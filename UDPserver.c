@@ -84,15 +84,6 @@ int main(int argc, char** argv)
 		fprintf(stderr, "Connected with %s at port %d\n", inet_ntoa(clientAddress[i].sin_addr), htons(clientAddress[i].sin_port));
 		if(len < 0)
 			fprintf(stderr, "ERROR in recvfrom\n");
-
-		//if((processInfo(buffer, sentMessage)) == 0)
-		//	sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress[i], sizeof(struct sockaddr_in));
-		//else {
-		//	strcpy(sentMessage, "Shutting Down");
-		//	sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress[i], sizeof(struct sockaddr_in));
-		//	close(ls);
-		//	return(EXIT_SUCCESS);
-		//}
 	}
 
 	for (i = 0; i < numberHosts; i++) 
@@ -102,6 +93,7 @@ int main(int argc, char** argv)
 	}
 
 	sendNeighbors(ls, numberHosts, clientAddress);
+	printf("made it\n");
 	assignPeerZero(ls, clientAddress, numberHosts);
 	
 	close(ls);

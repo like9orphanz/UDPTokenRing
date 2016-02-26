@@ -119,12 +119,24 @@ int closeSocket(int sockFD)
 	return errorCheck;
 }
 
+/*
+ *  Receives message from server telling this peer if it is peer 0 or not
+ *  
+ *  Returns -1 on error, 0 on not peer 0, and 1 for peer 0.
+ */
 int amIPeerZero(int sockFD, struct sockaddr_in *response, int size)
-{
-	if (receiveResponse(sockFD, response, size) < 0)
-		return -1;
+{	
+	char buffer[256];
+	bzero(buffer, 256);
+	socklen_t addr_size;
+	ssize_t len = recvfrom(sockFD, buffer, sizeof(buffer), 0, (struct sockaddr*)response, &addr_size);
 	
-	printf("Response: %s\n", response);
-	return 0;
+	if (len < 0) return -1;
+	
+	//printf("Response: %s\n", response);
+	if (strcmp("no", buffer) == 0)
+		return 0;
+	else
+		return 1;
 }
 

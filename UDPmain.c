@@ -19,7 +19,7 @@
   */
 int main(int argc, char** argv) 
 {
-	int  sockfd;
+	int  sockfd, P0;
 	struct sockaddr_in response;
 	char message[256];
 
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 	//printf ("Enter a message: ");
 	//fgets (message, 256, stdin);
 	// replace new line with null character
-	strcpy(message,"<echo>ey</echo>");
+	strcpy(message,"<echo>joining ring</echo>");
 	message[strlen(message)-1] = '\0';
 	
 	// send request to server
@@ -64,6 +64,19 @@ int main(int argc, char** argv)
 	}
 	printResponse(&response);
 
+
+	P0 = amIPeerZero(sockfd, &response, 256);
+	if (P0 < 0)
+	{
+		fprintf(stderr,"Error in peer 0 assignment\n");
+		closeSocket (sockfd);
+		exit (-1);
+	}
+	else if (P0 == 0) {
+		printf("I am not peer 0\n");
+	}
+	else 
+		printf("I am peer 0\n");
 
 	closeSocket (sockfd);
 

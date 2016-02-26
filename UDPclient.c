@@ -25,6 +25,7 @@
  */
 int receiveResponse(int sockFd, struct sockaddr_in *, int size);
 void printResponse(struct sockaddr_in *);
+int amIPeerZero(int sockFd, struct sockaddr_in *, int size);
 /*
  * return value - the socket identifier or a negative number indicating the error 
  * 		  for creating a socket
@@ -102,7 +103,6 @@ int receiveResponse(int sockFD, struct sockaddr_in *response, int size)
 void printResponse(struct sockaddr_in *response)
 {	
 	printf("Neighbor ip Address is: %s and port number is %d\n", inet_ntoa(response->sin_addr), htons(response->sin_port));
-
 }
 
 /*
@@ -117,5 +117,26 @@ int closeSocket(int sockFD)
 	int errorCheck = 0;
 	errorCheck = close(sockFD);
 	return errorCheck;
+}
+
+/*
+ *  Receives message from server telling this peer if it is peer 0 or not
+ *  
+ *  Returns -1 on error, 0 on not peer 0, and 1 for peer 0.
+ */
+int amIPeerZero(int sockFD, struct sockaddr_in *response, int size)
+{	
+	char buffer[256];
+	bzero(buffer, 256);
+	socklen_t addr_size;
+	ssize_t len = recvfrom(sockFD, buffer, sizeof(buffer), 0, (struct sockaddr*)response, &addr_size);
+	
+	if (len < 0) return -1;
+	
+	//printf("Response: %s\n", response);
+	if (strcmp("no", buffer) == 0)
+		return 0;
+	else
+		return 1;
 }
 

@@ -41,6 +41,7 @@ int getLoad(char *store);
 void portInfo(struct sockaddr_in *serverAddress, int sockfd);
 void sendNeighbors(int ls, int numHosts, struct sockaddr_in *clientAddress);
 void neighborSpecificInfo(int ls, struct sockaddr_in *clientAddress, int whichNeighbor, int whichHost);
+void assignPeerZero(int ls, struct sockaddr_in *clientAddress, int howManyHosts);
 /*
  *
  *
@@ -83,15 +84,6 @@ int main(int argc, char** argv)
 		fprintf(stderr, "Connected with %s at port %d\n", inet_ntoa(clientAddress[i].sin_addr), htons(clientAddress[i].sin_port));
 		if(len < 0)
 			fprintf(stderr, "ERROR in recvfrom\n");
-
-		//if((processInfo(buffer, sentMessage)) == 0)
-		//	sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress[i], sizeof(struct sockaddr_in));
-		//else {
-		//	strcpy(sentMessage, "Shutting Down");
-		//	sendto(ls, sentMessage, sizeof(sentMessage), 0, (struct sockaddr *)&clientAddress[i], sizeof(struct sockaddr_in));
-		//	close(ls);
-		//	return(EXIT_SUCCESS);
-		//}
 	}
 
 	for (i = 0; i < numberHosts; i++) 
@@ -101,6 +93,8 @@ int main(int argc, char** argv)
 	}
 
 	sendNeighbors(ls, numberHosts, clientAddress);
+	printf("made it\n");
+	assignPeerZero(ls, clientAddress, numberHosts);
 	
 	close(ls);
 	return(EXIT_SUCCESS);
@@ -149,6 +143,28 @@ void neighborSpecificInfo(int ls, struct sockaddr_in *clientAddress, int whichNe
 {	
 	sendto(ls, (void *)&(clientAddress[whichNeighbor]), sizeof(clientAddress[whichNeighbor]), 0, (const struct sockaddr *)&clientAddress[whichHost], sizeof(clientAddress[whichHost]));		
 }
+
+void assignPeerZero(int ls, struct sockaddr_in *clientAddress, int howManyHosts) 
+{
+	char buffer[256];
+	bzero(buffer, 256);
+	int i;
+	for (i = 0 ; i < howManyHosts ; i++) 
+	{
+		if (i == 0)
+		{
+			strcpy(buffer, "yes");
+			buffer[3] = '\0';
+		}
+		else 
+		{
+			strcpy(buffer, "no");
+			buffer[2] = '\0';
+		}
+		sendto(ls, buffer, sizeof(buffer), 0, (const struct sockaddr *)&clientAddress[i], sizeof(clientAddress[i]));
+	}
+}
+
 void printHostInfo()
 {
         char hostname[1024];

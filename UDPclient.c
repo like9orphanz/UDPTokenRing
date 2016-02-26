@@ -25,6 +25,7 @@
  */
 int receiveResponse(int sockFd, struct sockaddr_in *, int size);
 void printResponse(struct sockaddr_in *);
+int amIPeerZero(int sockFd, struct sockaddr_in *, int size);
 /*
  * return value - the socket identifier or a negative number indicating the error 
  * 		  for creating a socket
@@ -102,7 +103,6 @@ int receiveResponse(int sockFD, struct sockaddr_in *response, int size)
 void printResponse(struct sockaddr_in *response)
 {	
 	printf("Neighbor ip Address is: %s and port number is %d\n", inet_ntoa(response->sin_addr), htons(response->sin_port));
-
 }
 
 /*
@@ -117,5 +117,14 @@ int closeSocket(int sockFD)
 	int errorCheck = 0;
 	errorCheck = close(sockFD);
 	return errorCheck;
+}
+
+int amIPeerZero(int sockFD, struct sockaddr_in *response, int size)
+{
+	if (receiveResponse(sockFD, response, size) < 0)
+		return -1;
+	
+	printf("Response: %s\n", response);
+	return 0;
 }
 

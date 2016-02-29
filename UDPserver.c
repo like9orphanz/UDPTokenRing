@@ -128,8 +128,8 @@ void sendNeighbors(int ls, int numHosts, struct sockaddr_in *clientAddress)
 		}
 		if (i == numHosts - 1 && numHosts != 2) 
 		{
-			neighborSpecificInfo(ls, clientAddress, 0, i);  // left host
-			neighborSpecificInfo(ls, clientAddress, numHosts - 2, i);  // right host
+			neighborSpecificInfo(ls, clientAddress, numHosts - 2, i);  // left host
+			neighborSpecificInfo(ls, clientAddress, 0, i);  // right host
 		}
 		else 
 		{

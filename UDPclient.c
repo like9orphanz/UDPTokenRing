@@ -2,7 +2,7 @@
  *	File Name: TCPclient.c
  *	Author:    Joshua Wright
  *	           Sam Stein
- *	Project: 1
+ *	Project: 3
  *
  */
 

@@ -176,9 +176,15 @@ int doIHoldTheToken(char *flag)
 }
 void *bbOptions(void *blah)
 {
-	int option;
+	int token = (intptr_t)blah;
+	int option = 0;
 	fflush(stdin);
-	printf("For write press 1For read press 2For list press 3For exit press 4");
+	if(token){
+	printf("For write press 1\n");
+	printf("For read press 2\n");
+	printf("For list press 3\n");
+	printf("For exit press 4\n");
+	printf("\n");
 	scanf("%d", &option);
 	printf("%d\n",option);
 	if(option == 1)
@@ -192,6 +198,10 @@ void *bbOptions(void *blah)
 		printf("else\n");
 		exitFile();
 	}
+	}
+	else
+		printf("wait for the token");
+	
 	printf("nowhere\n");
 }
 void appendFile()

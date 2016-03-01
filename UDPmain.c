@@ -28,6 +28,7 @@ int main(int argc, char** argv)
 	pthread_attr_t attr;
 	pthread_attr_init (&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	void *status;
 
 	if (argc != 4) {
 		fprintf (stderr, "Usage: client <hostname> <portnum> <file name>\n");
@@ -89,9 +90,11 @@ int main(int argc, char** argv)
 		int token = 1;
 		//printf("%s\n", token);
 		createFile();
-		pthread_create(&thread, NULL, &bbOptions, NULL);
 	}
-	
+	pthread_create(&thread, NULL, &bbOptions, (void *)(intptr_t)token);
+
+	pthread_join(thread, &status);
+
 	closeSocket (sockfd);
 
 	exit(0);

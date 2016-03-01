@@ -26,6 +26,17 @@
 int receiveResponse(int sockFd, struct sockaddr_in *, int size);
 void printResponse(struct sockaddr_in *);
 int amIPeerZero(int sockFd, struct sockaddr_in *, int size);
+int doIHoldTheToken(char *flag);
+void createFile();
+void removeFile();
+void appendFile();
+void *bbOptions();
+void readFile();
+void listFile();
+void exitFile();
+void waitAndAppend();
+
+
 /*
  * return value - the socket identifier or a negative number indicating the error 
  * 		  for creating a socket
@@ -120,9 +131,9 @@ int closeSocket(int sockFD)
 }
 
 /*
- *  Receives message from server telling this peer if it is peer 0 or not
+ * Receives message from server telling this peer if it is peer 0 or not
  *  
- *  Returns -1 on error, 0 on not peer 0, and 1 for peer 0.
+ * Returns -1 on error, 0 on not peer 0, and 1 for peer 0.
  */
 int amIPeerZero(int sockFD, struct sockaddr_in *response, int size)
 {	
@@ -140,3 +151,62 @@ int amIPeerZero(int sockFD, struct sockaddr_in *response, int size)
 		return 1;
 }
 
+void createFile()
+{
+	char command[256];
+	strcpy(command, "touch filenameBulletinBoard"); 
+	system(command);
+}
+
+void removeFile(char *fileName)
+{
+	char command[256];
+	strcpy(command, "rm filenameBulletinBoard");
+	system(command);
+}
+
+
+int doIHoldTheToken(char *flag)
+{
+	if (strcmp("no", flag) == 0)
+	{
+		return 1;
+	}
+	else return 0;
+}
+void *bbOptions(void *blah)
+{
+	int option;
+	fflush(stdin);
+	printf("For write press 1For read press 2For list press 3For exit press 4");
+	scanf("%d", &option);
+	printf("%d\n",option);
+	if(option == 1)
+		appendFile();
+	else if(option == 2)
+		readFile();
+	else if(option == 3)
+		listFile();
+	else
+	{
+		printf("else\n");
+		exitFile();
+	}
+	printf("nowhere\n");
+}
+void appendFile()
+{
+	printf("append\n");
+}
+void readFile()
+{	
+	printf("read\n");
+}
+void listFile()
+{
+	printf("list\n");
+}
+void exitFile()
+{
+	printf("exit\n");
+}

@@ -14,3 +14,5 @@ int sendRequest(int, char *, char *, int);
 void sendResponse(char *);
 
 int closeSocket(int);
+
+void *bbOptions();

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <pthread.h>
 #include "UDPclient.h"
 
 /*
@@ -22,9 +23,14 @@ int main(int argc, char** argv)
 	int  sockfd, P0;
 	struct sockaddr_in response;
 	char message[256];
+	char *token;
+	pthread_t thread;
+	pthread_attr_t attr;
+	pthread_attr_init (&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-	if (argc != 3) {
-		fprintf (stderr, "Usage: client <hostname> <portnum>\n");
+	if (argc != 4) {
+		fprintf (stderr, "Usage: client <hostname> <portnum> <file name>\n");
 		exit (1);
 	}
 
@@ -37,8 +43,8 @@ int main(int argc, char** argv)
 		exit (1);
 	}
 	
-	//printf ("Enter a message: ");
-	//fgets (message, 256, stdin);
+	char *fileName = argv[4];
+
 	// replace new line with null character
 	strcpy(message,"<echo>joining ring</echo>");
 	message[strlen(message)-1] = '\0';
@@ -72,12 +78,20 @@ int main(int argc, char** argv)
 		closeSocket (sockfd);
 		exit (-1);
 	}
-	else if (P0 == 0) {
+	else if (P0 == 0) 
+	{
 		printf("I am not peer 0\n");
+		int token = 0;
 	}
 	else 
+	{
 		printf("I am peer 0\n");
-
+		int token = 1;
+		//printf("%s\n", token);
+		createFile();
+		pthread_create(&thread, NULL, &bbOptions, NULL);
+	}
+	
 	closeSocket (sockfd);
 
 	exit(0);

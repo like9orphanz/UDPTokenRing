@@ -27,9 +27,9 @@ int main(int argc, char** argv)
 	pthread_t thread;
 	pthread_attr_t attr;
 	pthread_attr_init (&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 	void *status;
-	
+	pthread_mutex_t count_mutex;
 
 	if (argc != 4) {
 		fprintf (stderr, "Usage: client <hostname> <portnum> <file name>\n");
@@ -94,9 +94,14 @@ int main(int argc, char** argv)
 			//printf("%s\n", token);
 			createFile();
 		}
+		
+			
 		pthread_create(&thread, NULL, &bbOptions, (void *)(intptr_t)count);
-		}
-		pthread_join(thread, &status);
+					
+		count++;
+	
+	}
+	//pthread_join(thread, &status);
 
 	closeSocket (sockfd);
 

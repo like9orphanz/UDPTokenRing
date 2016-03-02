@@ -42,7 +42,6 @@ void waitAndAppend();
 char * topWrapFunction(int howManyWrites);
 char *bottomWrapFunction();
 
-
 /*
  * return value - the socket identifier or a negative number indicating the error 
  * 		  for creating a socket
@@ -206,8 +205,7 @@ void *bbOptions(void *blah)
 		printf("else\n");
 		exitFile();
 	}
-	void *a;
-	return a;
+	pthread_exit(0);
 }
 
 void appendFile(int howManyWrites)
@@ -215,21 +213,35 @@ void appendFile(int howManyWrites)
 	printf("append\n");
 	char bleh;
 	FILE *fp;
-
-	fp = fopen("filenameBulletinBoard", "rw");
-
-	while (!feof(fp))
+	
+	if(howManyWrites > 1)
 	{
-	 
-		fscanf(fp, "%s\n", &bleh);
+		if((fp = fopen("filenameBulletinBoard.txt", "a")) == NULL)
+		{
+			printf("couldnt open file\n");
+			exit(1);
+		}
 	}
+	else
+	{
+	
+		if((fp = fopen("filenameBulletinBoard.txt", "w")) == NULL)
+		{
+			printf("couldnt open file\n");
+			exit(1);
+		}
+	}
+
 	char *buffer = getMessage();
-	char *topWrap = topWrapFunction(howManyWrites);
 	char *bottomWrap = bottomWrapFunction();
 	
-	printf("%s\n", topWrap);
-	printf("%s", buffer);
-	printf("%s\n", bottomWrap);
+	fprintf(fp, "<message n=%d>\n", howManyWrites);
+	fprintf(fp, "%s", buffer);
+	fprintf(fp, "</message>\n");
+	fclose(fp);
+	//printf("%s\n", topWrap);
+	//printf("%s", buffer);
+	//printf("%s\n", bottomWrap);
 
 }
 
@@ -237,6 +249,7 @@ char *getMessage()
 {	
 	int i = 0, c;
 	char message[1024];
+	bzero(message, 1024);
 	//char *message = (char *) malloc(256 * sizeof(char));
 	printf("Enter the message you'd like to post on the bulletin board\n");
 	c = getchar();
@@ -245,12 +258,20 @@ char *getMessage()
 	message[255] = '\0';
 	return message;
 }
+/*
 char *topWrapFunction(int howManyWrites)
 {
-	char *topWrap = "<message n = ";
-	//???????? how to add howManyWrites to char pointer
-	return topWrap;
+	char message[30] = "<message n = ";
+	printf("this is message: %s\n", message);
+	char snum[5];
+	sprintf(snum, "%d", howManyWrites);
+	printf("this is snum: %s\n", snum);
+	message[12] = snum;
+	strcat(message, ">");
+	printf("this is entire message: %s\n", message);
+	return message;
 }
+*/
 char *bottomWrapFunction()
 {
 	char * bottomWrap = "</message>";
@@ -281,6 +302,13 @@ char *bottomWrapFunction()
 void readFile()
 {	
 	printf("read\n");
+	FILE *fp;
+	
+	if((fp = fopen("filenameBulletinBoard.txt", "r")) == NULL)
+	{
+		printf("coulnt open file\n");
+		exit(1);
+	}
 }
 void listFile()
 {

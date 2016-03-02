@@ -16,7 +16,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <netdb.h>
-
+#define BUFFERSIZE 256
 
 
 /*
@@ -39,6 +39,8 @@ void readFile();
 void listFile();
 void exitFile();
 void waitAndAppend();
+char * topWrapFunction(int howManyWrites);
+char *bottomWrapFunction();
 
 
 /*
@@ -178,20 +180,23 @@ int doIHoldTheToken(char *flag)
 	}
 	else return 0;
 }
-void *bbOptions(void *blah, int howManyWrites)
+void *bbOptions(void *blah)
 {
 	int token = (intptr_t)blah;
+	printf("%d!!!!!!!!\n", token);
 	int option = 0;
 	fflush(stdin);
-	printf("For write press 1\n");
-	printf("For read press 2\n");
-	printf("For list press 3\n");
-	printf("For exit press 4\n");
-	printf("\n");
-	scanf("%d", &option);
-	printf("%d\n",option);
+		printf("For write press 1\n");
+		printf("For read press 2\n");
+		printf("For list press 3\n");
+		printf("For exit press 4\n");
+		printf("\n");
+		scanf("%d", &option);
+		printf("%d\n",option);
+
+
 	if(option == 1)
-		appendFile(howManyWrites);
+		appendFile(token);
 	else if(option == 2)
 		readFile();
 	else if(option == 3)
@@ -215,53 +220,64 @@ void appendFile(int howManyWrites)
 
 	while (!feof(fp))
 	{
-		fscanf(fp, "%s", &bleh);
+	 
+		fscanf(fp, "%s\n", &bleh);
 	}
 	char *buffer = getMessage();
-	printf("%s\n",buffer);
-	char *wrappedMessage = wrapMessage(buffer, howManyWrites);
-	printf("%s\n", wrappedMessage);
+	char *topWrap = topWrapFunction(howManyWrites);
+	char *bottomWrap = bottomWrapFunction();
+	
+	printf("%s\n", topWrap);
+	printf("%s", buffer);
+	printf("%s\n", bottomWrap);
 
 }
 
-char * getMessage()
-{
-	char *message = (char *) malloc(sizeof(char) * 256);
+char *getMessage()
+{	
+	int i = 0, c;
+	char message[1024];
+	//char *message = (char *) malloc(256 * sizeof(char));
 	printf("Enter the message you'd like to post on the bulletin board\n");
-	scanf("%s", message);
-	printf("%s\n",message);
+	c = getchar();
+	fgets(message, 1024, stdin);
 	message[254] = '\n';
 	message[255] = '\0';
 	return message;
 }
-
-char * wrapMessage(char *message, int howManyWrites) 
+char *topWrapFunction(int howManyWrites)
 {
-	char topWrap[14] = "<message n= >\n";
-	topWrap[11] = howManyWrites;
-	char bottomWrap[12] ="</message>\n";
+	char *topWrap = "<message n = ";
+	//???????? how to add howManyWrites to char pointer
+	return topWrap;
+}
+char *bottomWrapFunction()
+{
+	char * bottomWrap = "</message>";
+	return bottomWrap;
+}
+/*char * wrapMessage(char *message, int howManyWrites) 
+{
+	char bottomWrap[12] ="</message>\t";
 	int i;
 
-	char *wrappedMessage = (char *) malloc(sizeof(char) * (strlen(message) + 25));
-	
-	for (int i = 0 ; i < 15 ; i++) 
+
+	for (i = 0 ; i < 15 ; i++) 
 	{
 		wrappedMessage[i] = topWrap[i];
 	}
-	for (int i = 14 ; i < strlen(message) + 14 ; i++)
+	for (i = 14 ; i < strlen(message) + 14 ; i++)
 	{
-		wrappedMessage[i] = message[i - 14];
+		wrappedMessage[i] = message[i];
 	}
-	for (int i = 14 + strlen(message) ; i < 14 + strlen(message) + 12 ; i++)
+	for (i = 14 + strlen(message) ; i < 14 + strlen(message) + 12 ; i++)
 	{
 		wrappedMessage[i] = bottomWrap[i - 14 - strlen(message)];
 	}
 
-	wrappedMessage[strlen(message) + 24] = '\0';
-	free(message);
-	return wrappedMessage;
+	
 }
-
+*/
 void readFile()
 {	
 	printf("read\n");

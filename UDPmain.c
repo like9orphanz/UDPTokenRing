@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "UDPclient.h"
-
+#define done 1
 /*
  * A test program to start a client and connect it to a specified server.
  * Usage: client <hostname> <portnum>
@@ -27,8 +27,9 @@ int main(int argc, char** argv)
 	pthread_t thread;
 	pthread_attr_t attr;
 	pthread_attr_init (&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 	void *status;
+	
 
 	if (argc != 4) {
 		fprintf (stderr, "Usage: client <hostname> <portnum> <file name>\n");
@@ -71,29 +72,31 @@ int main(int argc, char** argv)
 	}
 	printResponse(&response);
 
-
-	P0 = amIPeerZero(sockfd, &response, 256);
-	if (P0 < 0)
+	int count = 1;
+	while(done != 0)
 	{
-		fprintf(stderr,"Error in peer 0 assignment\n");
-		closeSocket (sockfd);
-		exit (-1);
-	}
-	else if (P0 == 0) 
-	{
-		printf("I am not peer 0\n");
-		int token = 0;
-	}
-	else 
-	{
-		printf("I am peer 0\n");
-		int token = 1;
-		//printf("%s\n", token);
-		createFile();
-	}
-	pthread_create(&thread, NULL, &bbOptions, (void *)(intptr_t)token);
-
-	pthread_join(thread, &status);
+		P0 = amIPeerZero(sockfd, &response, 256);
+		if (P0 < 0)
+		{
+			fprintf(stderr,"Error in peer 0 assignment\n");
+			closeSocket (sockfd);
+			exit (-1);
+		}
+		else if (P0 == 0) 
+		{
+			printf("I am not peer 0\n");
+			int token = 0;
+		}
+		else 
+		{
+			printf("I am peer 0\n");
+			int token = 1;
+			//printf("%s\n", token);
+			createFile();
+		}
+		pthread_create(&thread, NULL, &bbOptions, (void *)(intptr_t)count);
+		}
+		pthread_join(thread, &status);
 
 	closeSocket (sockfd);
 

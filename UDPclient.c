@@ -182,14 +182,12 @@ int doIHoldTheToken(char *flag)
 void *bbOptions(void *blah)
 {
 	int token = (intptr_t)blah;
-	printf("%d!!!!!!!!\n", token);
 	int option = 0;
 	fflush(stdin);
 		printf("For write press 1\n");
 		printf("For read press 2\n");
 		printf("For list press 3\n");
 		printf("For exit press 4\n");
-		printf("\n");
 		scanf("%d", &option);
 		printf("%d\n",option);
 
@@ -201,17 +199,13 @@ void *bbOptions(void *blah)
 	else if(option == 3)
 		listFile();
 	else
-	{
-		printf("else\n");
 		exitFile();
-	}
 	pthread_exit(0);
 }
 
 void appendFile(int howManyWrites)
 {
 	printf("append\n");
-	char bleh;
 	FILE *fp;
 	
 	if(howManyWrites > 1)
@@ -224,7 +218,6 @@ void appendFile(int howManyWrites)
 	}
 	else
 	{
-	
 		if((fp = fopen("filenameBulletinBoard.txt", "w")) == NULL)
 		{
 			printf("couldnt open file\n");
@@ -234,7 +227,7 @@ void appendFile(int howManyWrites)
 
 	char *buffer = getMessage();
 	char *bottomWrap = bottomWrapFunction();
-	
+	printf("%s\n",buffer);
 	fprintf(fp, "<message n=%d>\n", howManyWrites);
 	fprintf(fp, "%s", buffer);
 	fprintf(fp, "</message>\n");
@@ -248,9 +241,7 @@ void appendFile(int howManyWrites)
 char *getMessage()
 {	
 	int i = 0, c;
-	char message[1024];
-	bzero(message, 1024);
-	//char *message = (char *) malloc(256 * sizeof(char));
+	char *message = (char *) malloc(256 * sizeof(char));
 	printf("Enter the message you'd like to post on the bulletin board\n");
 	c = getchar();
 	fgets(message, 1024, stdin);

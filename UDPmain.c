@@ -73,38 +73,34 @@ int main(int argc, char** argv)
 	printResponse(&response);
 
 	int count = 1;
-	while(done != 0)
+
+	P0 = amIPeerZero(sockfd, &response, 256);
+	if (P0 < 0)
 	{
-		P0 = amIPeerZero(sockfd, &response, 256);
-		if (P0 < 0)
-		{
-			fprintf(stderr,"Error in peer 0 assignment\n");
-			closeSocket (sockfd);
-			exit (-1);
-		}
-		else if (P0 == 0) 
-		{
-			printf("I am not peer 0\n");
-			int token = 0;
-		}
-		else 
-		{
-			printf("I am peer 0\n");
-			int token = 1;
-			//printf("%s\n", token);
-			createFile();
-		}
-		
-			
-		pthread_create(&thread, NULL, &bbOptions, (void *)(intptr_t)count);
-					
-		count++;
-	
+		fprintf(stderr,"Error in peer 0 assignment\n");
+		closeSocket (sockfd);
+		exit (-1);
 	}
+	else if (P0 == 0) 
+	{
+		printf("I am not peer 0\n");
+		int token = 0;
+	}
+	else 
+	{
+		printf("I am peer 0\n");
+		int token = 1;
+		createFile();
+		pthread_create(&thread, NULL, &bbOptions, (void *)(intptr_t)count);
+		pthread_join(thread, &status);
+	}
+		
+	token = 0;	
+	count++;
+	
 	//pthread_join(thread, &status);
 
-	closeSocket (sockfd);
-
-	exit(0);
+	int errorCheck = closeSocket(sockfd);
+	return 0;
 }
 

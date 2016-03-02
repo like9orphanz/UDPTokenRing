@@ -17,6 +17,8 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+
+
 /*
  *	This program is a TCPclient that communicates to TCPserver. This program uses TCPmain 
  *		to send a certain ammount of messages and tests to see if those messages
@@ -30,7 +32,9 @@ int doIHoldTheToken(char *flag);
 void createFile();
 void removeFile();
 void appendFile();
-void *bbOptions();
+char * getMessage();
+char * wrapMessage(char *message, int howManyWrites);
+void * bbOptions();
 void readFile();
 void listFile();
 void exitFile();
@@ -154,14 +158,14 @@ int amIPeerZero(int sockFD, struct sockaddr_in *response, int size)
 void createFile()
 {
 	char command[256];
-	strcpy(command, "touch filenameBulletinBoard"); 
+	strcpy(command, "touch filenameBulletinBoard.txt"); 
 	system(command);
 }
 
 void removeFile(char *fileName)
 {
 	char command[256];
-	strcpy(command, "rm filenameBulletinBoard");
+	strcpy(command, "rm filenameBulletinBoard.txt");
 	system(command);
 }
 
@@ -174,12 +178,11 @@ int doIHoldTheToken(char *flag)
 	}
 	else return 0;
 }
-void *bbOptions(void *blah)
+void *bbOptions(void *blah, int howManyWrites)
 {
 	int token = (intptr_t)blah;
 	int option = 0;
 	fflush(stdin);
-	if(token){
 	printf("For write press 1\n");
 	printf("For read press 2\n");
 	printf("For list press 3\n");
@@ -188,7 +191,7 @@ void *bbOptions(void *blah)
 	scanf("%d", &option);
 	printf("%d\n",option);
 	if(option == 1)
-		appendFile();
+		appendFile(howManyWrites);
 	else if(option == 2)
 		readFile();
 	else if(option == 3)
@@ -198,16 +201,67 @@ void *bbOptions(void *blah)
 		printf("else\n");
 		exitFile();
 	}
-	}
-	else
-		printf("wait for the token");
-	
-	printf("nowhere\n");
+	void *a;
+	return a;
 }
-void appendFile()
+
+void appendFile(int howManyWrites)
 {
 	printf("append\n");
+	char bleh;
+	FILE *fp;
+
+	fp = fopen("filenameBulletinBoard", "rw");
+
+	while (!feof(fp))
+	{
+		fscanf(fp, "%s", &bleh);
+	}
+	char *buffer = getMessage();
+	printf("%s\n",buffer);
+	char *wrappedMessage = wrapMessage(buffer, howManyWrites);
+	printf("%s\n", wrappedMessage);
+
 }
+
+char * getMessage()
+{
+	char *message = (char *) malloc(sizeof(char) * 256);
+	printf("Enter the message you'd like to post on the bulletin board\n");
+	scanf("%s", message);
+	printf("%s\n",message);
+	message[254] = '\n';
+	message[255] = '\0';
+	return message;
+}
+
+char * wrapMessage(char *message, int howManyWrites) 
+{
+	char topWrap[14] = "<message n= >\n";
+	topWrap[11] = howManyWrites;
+	char bottomWrap[12] ="</message>\n";
+	int i;
+
+	char *wrappedMessage = (char *) malloc(sizeof(char) * (strlen(message) + 25));
+	
+	for (int i = 0 ; i < 15 ; i++) 
+	{
+		wrappedMessage[i] = topWrap[i];
+	}
+	for (int i = 14 ; i < strlen(message) + 14 ; i++)
+	{
+		wrappedMessage[i] = message[i - 14];
+	}
+	for (int i = 14 + strlen(message) ; i < 14 + strlen(message) + 12 ; i++)
+	{
+		wrappedMessage[i] = bottomWrap[i - 14 - strlen(message)];
+	}
+
+	wrappedMessage[strlen(message) + 24] = '\0';
+	free(message);
+	return wrappedMessage;
+}
+
 void readFile()
 {	
 	printf("read\n");

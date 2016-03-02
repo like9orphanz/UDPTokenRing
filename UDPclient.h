@@ -1,3 +1,6 @@
+#ifndef UDPCLIENT_h
+#define UDPCLIENT_h
+
 /*
  * Sam Stein
  * Joshua Wright
@@ -5,6 +8,7 @@
  *
  * UDPclient.h
  */
+
 
 
 int createSocket();
@@ -16,3 +20,5 @@ void sendResponse(char *);
 int closeSocket(int);
 
 void *bbOptions();
+
+#endif

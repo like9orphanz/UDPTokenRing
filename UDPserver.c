@@ -65,8 +65,6 @@ int main(int argc, char** argv)
 	struct sockaddr_in serverAddress, clientAddress[numberHosts];
 	socklen_t addr_size;
 	addr_size = sizeof(clientAddress);
-	char sentMessage[256];
-	int errorCheck = 0;
 	int i;
 
 	// Bind the socket, assign numberHosts
@@ -109,7 +107,6 @@ int main(int argc, char** argv)
 void sendNeighbors(int ls, int numHosts, struct sockaddr_in *clientAddress)
 {
 	int i;
-	int errorCheck = 0;
 
 	for(i = 0; i < numHosts; i++)
 	{

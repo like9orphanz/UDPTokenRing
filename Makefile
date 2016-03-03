@@ -1,18 +1,13 @@
 CFLAGS = -g -Wall
 CC = gcc
-JC = javac
-JFLAGS = -g
 
-
-all : UDPserver UDPclientC UDPclient
+all : UDPserver UDPclientC
 
 UDPserver : UDPserver.c
-	gcc -o UDPserver UDPserver.c
+	gcc $(CFLAGS) -o UDPserver UDPserver.c
 
 UDPclientC : UDPmain.c UDPclient.c
-	gcc -pthread -o UDPclientC UDPmain.c UDPclient.c
+	gcc $(CFLAGS) -pthread -o UDPclientC UDPmain.c UDPclient.c
 
-UDPclient : UDPmain.java UDPclient.java
-	javac UDPmain.java UDPclient.java
 clean :
-	rm UDPserver UDPclientC UDPclient.class UDPmain.class
+	rm UDPserver UDPclientC

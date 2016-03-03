@@ -13,6 +13,10 @@
  *    <hostname> IP address or name of a host that runs the server
  *    <portnum> the numeric port number on which the server listens
  */
+int receiveResponse(int sockFd, struct sockaddr_in *, int size);
+void printResponse(struct sockaddr_in *);
+int amIPeerZero(int sockFd, struct sockaddr_in *, int size);
+fileInfoP firstReadWrite(int P0, int sockfd, int count);
 
 
  /*
@@ -23,14 +27,9 @@ int main(int argc, char** argv)
 	int  sockfd, P0;
 	struct sockaddr_in response;
 	char message[256];
-	pthread_t thread;
-	pthread_attr_t attr;
-	pthread_attr_init (&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	void *status;
-	pthread_mutex_t count_mutex;
 
-	if (argc != 4) {
+	if (argc != 4) 
+	{
 		fprintf (stderr, "Usage: client <hostname> <portnum> <file name>\n");
 		exit (1);
 	}
@@ -40,23 +39,24 @@ int main(int argc, char** argv)
 
 	// create a streaming socket
 	sockfd = createSocket();
-	if (sockfd < 0) {
+	if (sockfd < 0) 
+	{
 		exit (1);
 	}
 	
-	char *fileName = argv[4];
-
 	// replace new line with null character
 	strcpy(message,"<echo>joining ring</echo>");
 	message[strlen(message)-1] = '\0';
 	
 	// send request to server
-	if (sendRequest (sockfd, message, argv[1], portNum) < 0) {
+	if (sendRequest (sockfd, message, argv[1], portNum) < 0) 
+	{
 		closeSocket (sockfd);
 		exit (1);
 	}
 
-	if (receiveResponse(sockfd, &response, 256) < 0) {
+	if (receiveResponse(sockfd, &response, 256) < 0) 
+	{
 		closeSocket (sockfd);
 		exit (1);
 	}
@@ -75,29 +75,8 @@ int main(int argc, char** argv)
 
 	P0 = amIPeerZero(sockfd, &response, 256);
 	firstReadWrite(P0, sockfd, count);
-	/*
-	if (P0 < 0)
-	{
-		fprintf(stderr,"Error in peer 0 assignment\n");
-		closeSocket (sockfd);
-		exit (-1);
-	}
-	else if (P0 == 0) 
-	{
-		printf("I am not peer 0\n");
-		int token = 0;
-	}
-	else 
-	{
-		printf("I am peer 0\n");
-		int token = 1;
-		createFile();
-		pthread_create(&thread, NULL, &bbOptions, (void *)(intptr_t)count);
-		pthread_join(thread, &status);
-	}
-	*/	
-
-	int errorCheck = closeSocket(sockfd);
+	
+	closeSocket(sockfd);
 	return 0;
 }
 

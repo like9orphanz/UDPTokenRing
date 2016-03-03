@@ -198,11 +198,10 @@ fileInfoP firstReadWrite(int P0, int sockfd, int count)
 	else if (P0 == 0) 
 	{	
 		thisFileInfo->tokenFlag = 0;
-		printf("I am not peer 0\n");
 	}
 	else 
 	{	
-		printf("I am peer 0\n");
+		printf("I have token\n");
 		thisFileInfo->tokenFlag = 1;
 		thisFileInfo->count = 1;
 		createFile();
@@ -225,8 +224,6 @@ void *bbOptions(void *blah)
 		printf("For list press 3\n");
 		printf("For exit press 4\n");
 		scanf("%d", &option);
-		printf("%d\n",option);
-
 
 	if(option == 1)
 		appendFile(threadFileInfo);
@@ -242,7 +239,6 @@ void *bbOptions(void *blah)
 void appendFile(fileInfoP theInfo)
 {
 	pthread_mutex_t lock;
-	printf("append\n");
 	FILE *fp;
 	
 	if(theInfo->count > 1)
@@ -263,31 +259,26 @@ void appendFile(fileInfoP theInfo)
 	}
 
 	char *buffer = getMessage();
-	printf("above while\n");
-	while (1)
-	{	
-		printf("in while\n");
-		if (theInfo->tokenFlag == 1)
-		{
-			printf("eyyy\n");
-			pthread_mutex_lock(&lock);
-			fprintf(fp, "<message n=%d>\n", theInfo->count);
-			fprintf(fp, "%s", buffer);
-			fprintf(fp, "</message>\n");
-			printf("done writing\n");
-			break;
-		}
+
+	if (theInfo->tokenFlag == 1)
+	{
+		pthread_mutex_lock(&lock);
+		fprintf(fp, "<message n=%d>\n", theInfo->count);
+		fprintf(fp, "%s", buffer);
+		fprintf(fp, "</message>\n");
+		printf("Wrote to file\n");
 	}
+	
 	fclose(fp);
 	pthread_mutex_unlock(&lock);
 }
 
 char *getMessage()
 {	
-	int i = 0, c;
+	char c;
 	char *message = (char *) malloc(256 * sizeof(char));
-	printf("Enter the message you'd like to post on the bulletin board\n");
 	c = getchar();
+	printf("Enter the message you'd like to post on the bulletin board%c", c);
 	fgets(message, 1024, stdin);
 	message[255] = '\0';
 	return message;
@@ -298,10 +289,8 @@ void readFile()
 	char temp;
 	int messageNumber;
 	char *messageNumChar = malloc(sizeof(char) * 500);
-	char *search = malloc(sizeof(char) * 500);
 	char *message = malloc(sizeof(char) * 500); 
 	message = "<message n=";
-	printf("read\n");
 	FILE *fp;
 	
 	if((fp = fopen("filenameBulletinBoard.txt", "r")) == NULL)
@@ -312,52 +301,13 @@ void readFile()
 	printf("Enter the message you want to read?\n");
 	scanf("%d", &messageNumber);
 	sprintf(messageNumChar, "%d", messageNumber);
-	printf("%s\n", messageNumChar);
 	char target[strlen(message) + strlen(messageNumChar) + 1];
 	strcpy(target, message);
 	strcat(target, messageNumChar);
 	strcat(target, ">");
-	printf("this is message %s\n", target);
 	char buffer[1024];
 	bzero(buffer, 1024);
-	/*
-	char format[13];
-	int i = 0;
-	while(!feof(fp))
-	{
-		printf("outer loop\n");
-		temp = fgetc(fp);
-		if (temp == '<') 
-		{
-			printf("first if\n");
-			while (temp != '=' || temp != '>')
-			{	
-				printf("second while\n");
-				format[i] = temp;
-				temp = fgetc(fp);
-				i++;
-			}
-			if (format[i - 1] == 'n')
-			{
-				printf("second if\n");
-				temp = fgetc(fp);
-			}
-			if ((int)temp == messageNumber)
-			{
-				printf("third if\n");
-				temp = fgetc(fp); // newline
-				while (1)
-				{	
-					printf("third while\n");
-					temp = fgetc(fp);
-					if (temp == '\0') break;
-					printf("%c",temp);
-				}
-			}
-		}
-	}
-	*/
-	
+ 
 	while(!feof(fp))
 	{
 		fgets(buffer, 1024, fp);
@@ -369,11 +319,14 @@ void readFile()
 			while(!feof(fp))
 			{	
 				temp = getc(fp);
-				if (temp == '>') break;
+				if (temp == '<')
+				{
+					temp = getc(fp);
+					if(temp == '/')
+						break;
+				}
 				printf("%c", temp);
-				//bzero(buffer, 1024);
-				//fgets(buffer, 1024, fp);
-				//printf("%s\n", buffer);			
+							
 			}		
 		}
 	}

@@ -9,7 +9,13 @@
  * UDPclient.h
  */
 
+typedef struct fileInfo *fileInfoP;
 
+struct fileInfo
+{
+	int tokenFlag;
+	int count;
+};
 
 int createSocket();
 

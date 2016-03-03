@@ -23,7 +23,6 @@ int main(int argc, char** argv)
 	int  sockfd, P0;
 	struct sockaddr_in response;
 	char message[256];
-	char *token;
 	pthread_t thread;
 	pthread_attr_t attr;
 	pthread_attr_init (&attr);
@@ -75,6 +74,8 @@ int main(int argc, char** argv)
 	int count = 1;
 
 	P0 = amIPeerZero(sockfd, &response, 256);
+	firstReadWrite(P0, sockfd, count);
+	/*
 	if (P0 < 0)
 	{
 		fprintf(stderr,"Error in peer 0 assignment\n");
@@ -94,11 +95,7 @@ int main(int argc, char** argv)
 		pthread_create(&thread, NULL, &bbOptions, (void *)(intptr_t)count);
 		pthread_join(thread, &status);
 	}
-		
-	token = 0;	
-	count++;
-	
-	//pthread_join(thread, &status);
+	*/	
 
 	int errorCheck = closeSocket(sockfd);
 	return 0;

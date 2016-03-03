@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <pthread.h>
 #define BUFFERSIZE 256
 
 
@@ -31,16 +32,15 @@ int amIPeerZero(int sockFd, struct sockaddr_in *, int size);
 int doIHoldTheToken(char *flag);
 void createFile();
 void removeFile();
-void appendFile();
+void appendFile(fileInfoP thisInfo);
 char * getMessage();
-char * wrapMessage(char *message, int howManyWrites);
+fileInfoP firstReadWrite(int P0, int sockFd, int count);
 void * bbOptions();
 void readFile();
 void listFile();
 void exitFile();
 void waitAndAppend();
 char * topWrapFunction(int howManyWrites);
-char *bottomWrapFunction();
 
 /*
  * return value - the socket identifier or a negative number indicating the error 
@@ -179,9 +179,45 @@ int doIHoldTheToken(char *flag)
 	}
 	else return 0;
 }
+
+fileInfoP firstReadWrite(int P0, int sockfd, int count)
+{
+	pthread_t thread;
+	pthread_attr_t attr;
+	pthread_attr_init (&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
+	fileInfoP thisFileInfo = (fileInfoP) malloc(sizeof(struct fileInfo));
+
+	if (P0 < 0)
+	{
+		fprintf(stderr,"Error in peer 0 assignment\n");
+		closeSocket (sockfd);
+		exit (-1);
+	}
+	else if (P0 == 0) 
+	{	
+		thisFileInfo->tokenFlag = 0;
+		printf("I am not peer 0\n");
+	}
+	else 
+	{	
+		printf("I am peer 0\n");
+		thisFileInfo->tokenFlag = 1;
+		thisFileInfo->count = 1;
+		createFile();
+	}
+
+	pthread_create(&thread, NULL, &bbOptions, thisFileInfo);
+	pthread_join(thread, NULL);
+	
+	return thisFileInfo;
+}
+
 void *bbOptions(void *blah)
 {
-	int token = (intptr_t)blah;
+	fileInfoP threadFileInfo = (fileInfoP)blah;
+
 	int option = 0;
 	fflush(stdin);
 		printf("For write press 1\n");
@@ -193,7 +229,7 @@ void *bbOptions(void *blah)
 
 
 	if(option == 1)
-		appendFile(token);
+		appendFile(threadFileInfo);
 	else if(option == 2)
 		readFile();
 	else if(option == 3)
@@ -203,12 +239,13 @@ void *bbOptions(void *blah)
 	pthread_exit(0);
 }
 
-void appendFile(int howManyWrites)
+void appendFile(fileInfoP theInfo)
 {
+	pthread_mutex_t lock;
 	printf("append\n");
 	FILE *fp;
 	
-	if(howManyWrites > 1)
+	if(theInfo->count > 1)
 	{
 		if((fp = fopen("filenameBulletinBoard.txt", "a")) == NULL)
 		{
@@ -226,16 +263,23 @@ void appendFile(int howManyWrites)
 	}
 
 	char *buffer = getMessage();
-	char *bottomWrap = bottomWrapFunction();
-	printf("%s\n",buffer);
-	fprintf(fp, "<message n=%d>\n", howManyWrites);
-	fprintf(fp, "%s", buffer);
-	fprintf(fp, "</message>\n");
+	printf("above while\n");
+	while (1)
+	{	
+		printf("in while\n");
+		if (theInfo->tokenFlag == 1)
+		{
+			printf("eyyy\n");
+			pthread_mutex_lock(&lock);
+			fprintf(fp, "<message n=%d>\n", theInfo->count);
+			fprintf(fp, "%s", buffer);
+			fprintf(fp, "</message>\n");
+			printf("done writing\n");
+			break;
+		}
+	}
 	fclose(fp);
-	//printf("%s\n", topWrap);
-	//printf("%s", buffer);
-	//printf("%s\n", bottomWrap);
-
+	pthread_mutex_unlock(&lock);
 }
 
 char *getMessage()
@@ -245,53 +289,18 @@ char *getMessage()
 	printf("Enter the message you'd like to post on the bulletin board\n");
 	c = getchar();
 	fgets(message, 1024, stdin);
-	message[254] = '\n';
 	message[255] = '\0';
 	return message;
 }
-/*
-char *topWrapFunction(int howManyWrites)
-{
-	char message[30] = "<message n = ";
-	printf("this is message: %s\n", message);
-	char snum[5];
-	sprintf(snum, "%d", howManyWrites);
-	printf("this is snum: %s\n", snum);
-	message[12] = snum;
-	strcat(message, ">");
-	printf("this is entire message: %s\n", message);
-	return message;
-}
-*/
-char *bottomWrapFunction()
-{
-	char * bottomWrap = "</message>";
-	return bottomWrap;
-}
-/*char * wrapMessage(char *message, int howManyWrites) 
-{
-	char bottomWrap[12] ="</message>\t";
-	int i;
 
-
-	for (i = 0 ; i < 15 ; i++) 
-	{
-		wrappedMessage[i] = topWrap[i];
-	}
-	for (i = 14 ; i < strlen(message) + 14 ; i++)
-	{
-		wrappedMessage[i] = message[i];
-	}
-	for (i = 14 + strlen(message) ; i < 14 + strlen(message) + 12 ; i++)
-	{
-		wrappedMessage[i] = bottomWrap[i - 14 - strlen(message)];
-	}
-
-	
-}
-*/
 void readFile()
 {	
+	char temp;
+	int messageNumber;
+	char *messageNumChar = malloc(sizeof(char) * 500);
+	char *search = malloc(sizeof(char) * 500);
+	char *message = malloc(sizeof(char) * 500); 
+	message = "<message n=";
 	printf("read\n");
 	FILE *fp;
 	
@@ -300,6 +309,75 @@ void readFile()
 		printf("coulnt open file\n");
 		exit(1);
 	}
+	printf("Enter the message you want to read?\n");
+	scanf("%d", &messageNumber);
+	sprintf(messageNumChar, "%d", messageNumber);
+	printf("%s\n", messageNumChar);
+	char target[strlen(message) + strlen(messageNumChar) + 1];
+	strcpy(target, message);
+	strcat(target, messageNumChar);
+	strcat(target, ">");
+	printf("this is message %s\n", target);
+	char buffer[1024];
+	bzero(buffer, 1024);
+	/*
+	char format[13];
+	int i = 0;
+	while(!feof(fp))
+	{
+		printf("outer loop\n");
+		temp = fgetc(fp);
+		if (temp == '<') 
+		{
+			printf("first if\n");
+			while (temp != '=' || temp != '>')
+			{	
+				printf("second while\n");
+				format[i] = temp;
+				temp = fgetc(fp);
+				i++;
+			}
+			if (format[i - 1] == 'n')
+			{
+				printf("second if\n");
+				temp = fgetc(fp);
+			}
+			if ((int)temp == messageNumber)
+			{
+				printf("third if\n");
+				temp = fgetc(fp); // newline
+				while (1)
+				{	
+					printf("third while\n");
+					temp = fgetc(fp);
+					if (temp == '\0') break;
+					printf("%c",temp);
+				}
+			}
+		}
+	}
+	*/
+	
+	while(!feof(fp))
+	{
+		fgets(buffer, 1024, fp);
+		if((strstr(buffer, target)) != NULL)
+		{
+			bzero(buffer, 1024);
+			fgets(buffer, 1024, fp);
+			printf("%s\n", buffer);
+			while(!feof(fp))
+			{	
+				temp = getc(fp);
+				if (temp == '>') break;
+				printf("%c", temp);
+				//bzero(buffer, 1024);
+				//fgets(buffer, 1024, fp);
+				//printf("%s\n", buffer);			
+			}		
+		}
+	}
+
 }
 void listFile()
 {

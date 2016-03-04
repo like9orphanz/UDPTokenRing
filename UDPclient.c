@@ -26,6 +26,7 @@
  *		fit the criteria that the server replies with
  *
  */
+ /*
 int receiveResponse(int sockFd, struct sockaddr_in *, int size);
 void printResponse(struct sockaddr_in *);
 int amIPeerZero(int sockFd, struct sockaddr_in *, int size);
@@ -42,6 +43,7 @@ void listFile();
 void exitFile();
 void waitAndAppend();
 char * topWrapFunction(int howManyWrites);
+*/
 
 /*
  * return value - the socket identifier or a negative number indicating the error 
@@ -136,16 +138,17 @@ int closeSocket(int sockFD)
 	return errorCheck;
 }
 
-int getAllPeerInfo(int sockFd, struct sockaddr_in *respone, int size)
-{
-	if (receiveRepsonse(sockFd, response[0], size) < 0)
+int getAllPeerInfo(int sockFd, struct sockaddr_in *response, int size)
+{	
+	printf("made it here\n");
+	if (receiveResponse(sockFd, &response[0], size) < 0)
 		return -1;
-	if (receiveResponse(sockFd, response[1], size) < 0)
+	if (receiveResponse(sockFd, &response[1], size) < 0)
 		return -1;
 	printf("At 0:\n");
-	printResponse(response[0]);
+	printResponse(&response[0]);
 	printf("At 1:\n");
-	printResponse(response[1]);
+	printResponse(&response[1]);
 	return 0;
 }
 

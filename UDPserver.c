@@ -28,6 +28,7 @@
  *	send either <reply></reply>, the load average, or <error></error>
  *
  */
+ 
 int ListenSockCreation(int port, struct sockaddr_in *address);
 void printHostInfo();
 int processInfo(char *buffer, char *rcvString);
@@ -42,6 +43,7 @@ void portInfo(struct sockaddr_in *serverAddress, int sockfd);
 void sendNeighbors(int ls, int numHosts, struct sockaddr_in *clientAddress);
 void neighborSpecificInfo(int ls, struct sockaddr_in *clientAddress, int whichNeighbor, int whichHost);
 void assignPeerZero(int ls, struct sockaddr_in *clientAddress, int howManyHosts);
+
 /*
  *
  *

@@ -15,12 +15,6 @@
  */
 
  /*
-int receiveResponse(int sockFd, struct sockaddr_in *response, int size);
-void printResponse(struct sockaddr_in *response);
-int amIPeerZero(int sockFd, struct sockaddr_in *response, int size);
-fileInfoP firstReadWrite(int P0, int sockfd, int count);
-*/
- /*
   * A note
   */
 int main(int argc, char** argv) 
@@ -62,23 +56,6 @@ int main(int argc, char** argv)
 		exit(1);
 	}
 
-	/*
-	if (receiveResponse(sockfd, &response[0], 256) < 0) 
-	{
-		closeSocket (sockfd);
-		exit (1);
-	}
-	
-	// display response from server
-	printResponse(&response[0]);
-	
-	if (receiveResponse(sockfd, &response[1], 256) < 0) 
-	{
-		closeSocket (sockfd);
-		exit (1);
-	}
-	printResponse(&response[1]);
-	*/
 	int count = 1;
 
 	P0 = amIPeerZero(sockfd, response, 256);

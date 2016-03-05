@@ -12,11 +12,19 @@
 #include <netinet/in.h>
 
 typedef struct fileInfo *fileInfoP;
+typedef struct tokenHandlerStruct *tokenHandlerStructP;
 
 struct fileInfo
 {
 	int tokenFlag;
 	int count;
+};
+
+struct tokenHandlerStruct
+{
+	fileInfoP theFileInfo;
+	struct sockaddr_in *neighborInfo;
+	int sock;
 };
 
 int createSocket();
@@ -30,11 +38,16 @@ void createFile();
 void removeFile();
 int doIHoldTheToken(char *);
 void appendFile(fileInfoP);
-fileInfoP firstReadWrite(int, int, int);
+fileInfoP firstReadWrite(int, int);
+void readWrite(fileInfoP);
+int passToken(int, struct sockaddr_in *, fileInfoP);
+int receiveToken(int, fileInfoP, struct sockaddr_in *);
+void *handleTokenWork(void *);
+tokenHandlerStructP createTokenHandlerStruct(fileInfoP, struct sockaddr_in *);
 char * getMessage();
 void * bbOptions();
-void readFile();
-void listFile();
+void readFile(fileInfoP);
+void listFile(fileInfoP);
 void exitFile();
 
 #endif

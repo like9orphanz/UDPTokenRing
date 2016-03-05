@@ -19,10 +19,19 @@
   */
 int main(int argc, char** argv) 
 {
-	printf("hello, command line update\n");
 	int  sockfd, P0;
 	struct sockaddr_in response[2];
+	struct sockaddr_in P0Response;
 	char message[256];
+	fileInfoP theFileInfo;
+	tokenHandlerStructP tokenHandlerInfo = 0x00;
+
+	pthread_t threadBB, threadToken;
+	pthread_attr_t attr1, attr2;
+	pthread_attr_init (&attr1);
+	pthread_attr_init (&attr2);
+	pthread_attr_setdetachstate(&attr1, PTHREAD_CREATE_DETACHED);
+	pthread_attr_setdetachstate(&attr2, PTHREAD_CREATE_DETACHED);
 
 	if (argc != 4) 
 	{
@@ -56,11 +65,27 @@ int main(int argc, char** argv)
 		exit(1);
 	}
 
-	int count = 1;
-
-	P0 = amIPeerZero(sockfd, response, 256);
-	firstReadWrite(P0, sockfd, count);
+	P0 = amIPeerZero(sockfd, &P0Response, 256);
 	
+	theFileInfo = firstReadWrite(P0, sockfd);
+	tokenHandlerInfo = createTokenHandlerStruct(theFileInfo, response);
+	
+	pthread_create(&threadBB, NULL, &bbOptions, theFileInfo);
+	pthread_create(&threadToken, NULL, &handleTokenWork, tokenHandlerInfo);
+	pthread_join(threadBB, NULL);
+	pthread_join(threadToken, NULL);
+
+
+	/*
+	while(1)
+	{
+		readWrite(theFileInfo);
+		if (theFileInfo->tokenFlag == 1)
+			passToken(theFileInfo->count, response);
+		else
+			receiveToken(theFileInfo, &response[0]);
+	}
+	*/
 	closeSocket(sockfd);
 	return 0;
 }

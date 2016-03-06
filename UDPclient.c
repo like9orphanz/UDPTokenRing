@@ -29,7 +29,7 @@
 /*
  * return value - the socket identifier or a negative number indicating the error 
  * 		  for creating a socket
- *
+ * dalfijadsofijasd
  */
 int createSocket()
 {
@@ -233,7 +233,7 @@ int receiveToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbo
 	ssize_t len = recvfrom(sockfd, thisFileInfo, sizeof(thisFileInfo), 0, (struct sockaddr *) &neighbor[0], &addr_size); 
 	
 	thisFileInfo->tokenFlag = 1;
-	printf("Received token, count now = %d\n", thisFileInfo->count);
+	printf("Received token, count now = %d.\n", thisFileInfo->count);
 	return len;
 }
 /*

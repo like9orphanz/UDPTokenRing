@@ -220,23 +220,23 @@ void readWrite(fileInfoP thisFileInfo)
 	pthread_join(thread, NULL);
 }
 
-int passToken(tokenHandlerStructP tokenStruct)
+int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
 {	
-	printf("passing token to IP: %s, Port No: %d\n", inet_ntoa(tokenStruct->neighborInfo[1].sin_addr), htons(tokenStruct->neighborInfo[1].sin_port));
-	int a = sendto(tokenStruct->sock, &tokenStruct->theFileInfo, sizeof(tokenStruct->theFileInfo), 0, (const struct sockaddr *) &tokenStruct->neighborInfo[1], sizeof(tokenStruct->neighborInfo[1]));
+	printf("passing token to IP: %s, Port No: %d\n", inet_ntoa(neighbor[1].sin_addr), htons(neighbor[1].sin_port));
+	int a = sendto(sockfd, &thisFileInfo, sizeof(thisFileInfo), 0, (const struct sockaddr *) &neighbor[1], sizeof(neighbor[1]));
 	return a;
 }
 
 int receiveToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
 {
 	socklen_t addr_size = sizeof(neighbor[0]);
-	ssize_t len = recvfrom(sockfd, thisFileInfo, sizeof(thisFileInfo), 0, (struct sockaddr *)neighbor, &addr_size); 
+	ssize_t len = recvfrom(sockfd, thisFileInfo, sizeof(thisFileInfo), 0, (struct sockaddr *) &neighbor[0], &addr_size); 
 	
 	thisFileInfo->tokenFlag = 1;
 	printf("Received token, count now = %d\n", thisFileInfo->count);
 	return len;
 }
-
+/*
 void *handleTokenWork(void *kablah)
 {
 	tokenHandlerStructP tokenStruct = (tokenHandlerStructP) kablah;
@@ -259,7 +259,7 @@ void *handleTokenWork(void *kablah)
 		}
 	}
 }
-
+*/
 void *bbOptions(void *blah)
 {
 	fileInfoP threadFileInfo = (fileInfoP)blah;

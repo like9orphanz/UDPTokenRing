@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 	struct sockaddr_in P0Response;
 	char message[256];
 	fileInfoP theFileInfo;
-	tokenHandlerStructP tokenHandlerInfo = 0x00;
+	tokenHandlerStructP tokenHandler = 0x00;
 
 	pthread_t threadBB, threadToken;
 	pthread_attr_t attr1, attr2;
@@ -66,7 +66,27 @@ int main(int argc, char** argv)
 	}
 
 	P0 = amIPeerZero(sockfd, &P0Response, 256);
-	
+	theFileInfo = firstReadWrite(P0, sockfd);
+	tokenHandler = createTokenHandlerStruct(theFileInfo, response);
+	tokenHandler->sock = sockfd;
+		// pass token if peer zero
+	if (P0 == 1)
+	{
+		if (passToken(tokenHandler->sock, tokenHandler->theFileInfo, tokenHandler->neighborInfo) < 0)
+		{
+			fprintf(stderr, "error in passing token\n");
+			exit (-1);
+		}
+	}
+	else
+	{
+		if (receiveToken(tokenHandler->sock, tokenHandler->theFileInfo, tokenHandler->neighborInfo) < 0)
+		{
+			fprintf(stderr, "error in receiving token\n");
+			exit (-1);
+		}
+	}
+	/*
 	theFileInfo = firstReadWrite(P0, sockfd);
 	printf("after first read write\n");
 	tokenHandlerInfo = createTokenHandlerStruct(theFileInfo, response);
@@ -77,6 +97,7 @@ int main(int argc, char** argv)
 	//pthread_create(&threadToken, NULL, &handleTokenWork, tokenHandlerInfo); // token passing thread
 	pthread_join(threadBB, (void **)NULL);
 	//pthread_join(threadToken, NULL);
+	*/
 
 	/*
 	while(1)

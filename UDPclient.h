@@ -40,7 +40,7 @@ int doIHoldTheToken(char *);
 void appendFile(fileInfoP);
 fileInfoP firstReadWrite(int, int);
 void readWrite(fileInfoP);
-int passToken(tokenHandlerStructP);
+int passToken(int, fileInfoP, struct sockaddr_in *);
 int receiveToken(int, fileInfoP, struct sockaddr_in *);
 void *handleTokenWork(void *);
 tokenHandlerStructP createTokenHandlerStruct(fileInfoP, struct sockaddr_in *);

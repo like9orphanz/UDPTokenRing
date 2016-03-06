@@ -220,37 +220,34 @@ void readWrite(fileInfoP thisFileInfo)
 	pthread_join(thread, NULL);
 }
 
-int passToken(int sockfd, struct sockaddr_in *neighbor, fileInfoP thisFileInfo)
+int passToken(tokenHandlerStructP tokenStruct)
 {	
-	printf("passing token to IP: %s, Port No: %d\n", inet_ntoa(neighbor[0].sin_addr), htons(neighbor[0].sin_port));
-	thisFileInfo->tokenFlag = 0;
-	return sendto(sockfd, (const void *) &thisFileInfo->count, sizeof(int), 0, (const struct sockaddr *) &neighbor[1], sizeof(neighbor));
+	//printf("passing token to IP: %s, Port No: %d\n", inet_ntoa(neighbor[0].sin_addr), htons(neighbor[0].sin_port));
+	tokenStruct->theFileInfo->tokenFlag = 0;
+	int a = sendto(tokenStruct->sock, (void *) &tokenStruct->theFileInfo, sizeof(tokenStruct->theFileInfo), 0, (const struct sockaddr *) &tokenStruct->neighborInfo[1], sizeof(tokenStruct->neighborInfo[1]));
+	return a;
 }
 
 int receiveToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
 {
-	char buffer[256];
-	bzero(buffer, 256);
 	socklen_t addr_size;
-	ssize_t len = recvfrom(sockfd, (void *)buffer, sizeof(buffer), 0, (struct sockaddr *)neighbor, &addr_size); 
+	ssize_t len = recvfrom(sockfd, (void *) &thisFileInfo, sizeof(thisFileInfo), 0, (struct sockaddr *)neighbor, &addr_size); 
 	thisFileInfo->tokenFlag = 1;
-	int count = atoi(buffer);
-	printf("Received token, count now = %d\n", count);
-	thisFileInfo->count = count;
+	printf("Received token, count now = %d\n", thisFileInfo->count);
 	return len;
 }
 
 void *handleTokenWork(void *kablah)
 {
 	tokenHandlerStructP tokenStruct = (tokenHandlerStructP) kablah;
-
+	printf("in handleTokenWork\n");
 	while (1)
 	{
 		while (tokenStruct->theFileInfo->tokenFlag == 1)
 		{
 			//allow bb handler to do what it wants while holding token
 			if (tokenStruct->theFileInfo->tokenFlag == 0)
-				passToken(tokenStruct->sock, tokenStruct->neighborInfo, tokenStruct->theFileInfo);
+				passToken(tokenStruct);
 		}
 		if (receiveToken(tokenStruct->sock, tokenStruct->theFileInfo, tokenStruct->neighborInfo) < 0)
 		{
@@ -263,17 +260,13 @@ void *handleTokenWork(void *kablah)
 void *bbOptions(void *blah)
 {
 	fileInfoP threadFileInfo = (fileInfoP)blah;
-	pthread_mutex_t lock;
-	void *a= 0x00;
 	int option = 0;
 	fflush(stdin);
-	pthread_mutex_lock(&lock);
 	printf("For write press 1\n");
 	printf("For read press 2\n");
 	printf("For list press 3\n");
 	printf("For exit press 4\n");
 	scanf("%d", &option);
-	pthread_mutex_unlock(&lock);
 	if(option == 1)
 		appendFile(threadFileInfo);
 	else if(option == 2)
@@ -282,7 +275,8 @@ void *bbOptions(void *blah)
 		listFile(threadFileInfo);
 	else
 		exitFile();
-	return a;
+	pthread_exit(NULL);
+	printf("threadFileInfo->tokenFlag = %d\n",threadFileInfo->tokenFlag);
 }
 	
 void appendFile(fileInfoP theInfo)
@@ -321,9 +315,16 @@ void appendFile(fileInfoP theInfo)
 			break;
 		}
 	}
+	printf("broke out of loop\n");
 	
-	fclose(fp);
+	if (fclose(fp) != 0)
+	{
+		fprintf(stderr, "error closing file\n");
+		exit (-1);
+	}
+	printf("closed file\n");
 	pthread_mutex_unlock(&lock);
+	printf("unlocked\n");
 	theInfo->tokenFlag = 0;
 }
 
@@ -331,11 +332,10 @@ char *getMessage(fileInfoP thisFileInfo)
 {	
 	char c;
 	char *message = (char *) malloc(256 * sizeof(char));
-	thisFileInfo->tokenFlag = 0;
 
 	c = getchar();
 	printf("Enter the message you'd like to post on the bulletin board%c", c);
-	fgets(message, 1024, stdin);
+	fgets(message, 256, stdin);
 	message[255] = '\0';
 	return message;
 }
@@ -387,6 +387,11 @@ void readFile(fileInfoP thisFileInfo)
 							
 			}		
 		}
+	}
+	if (fclose(fp) != 0)
+	{
+		fprintf(stderr,"error closing file\n");
+		exit(-1);
 	}
 }
 void listFile()

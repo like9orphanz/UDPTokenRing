@@ -68,13 +68,15 @@ int main(int argc, char** argv)
 	P0 = amIPeerZero(sockfd, &P0Response, 256);
 	
 	theFileInfo = firstReadWrite(P0, sockfd);
+	printf("after first read write\n");
 	tokenHandlerInfo = createTokenHandlerStruct(theFileInfo, response);
-	
-	pthread_create(&threadBB, NULL, &bbOptions, theFileInfo);
-	pthread_create(&threadToken, NULL, &handleTokenWork, tokenHandlerInfo);
+	tokenHandlerInfo->sock = sockfd;
+	pthread_create(&threadBB, NULL, &bbOptions, theFileInfo); // bulletin board thread
+	printf("back from thread\n");
+	handleTokenWork(tokenHandlerInfo);
+	//pthread_create(&threadToken, NULL, &handleTokenWork, tokenHandlerInfo); // token passing thread
 	pthread_join(threadBB, NULL);
-	pthread_join(threadToken, NULL);
-
+	//pthread_join(threadToken, NULL);
 
 	/*
 	while(1)

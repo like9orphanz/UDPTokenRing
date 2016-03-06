@@ -26,6 +26,7 @@ int main(int argc, char** argv)
 	fileInfoP theFileInfo;
 	tokenHandlerStructP tokenHandler = 0x00;
 
+	pthread_mutex_t mainLock;
 	pthread_t threadBB, threadToken;
 	pthread_attr_t attr1, attr2;
 	pthread_attr_init (&attr1);
@@ -69,8 +70,41 @@ int main(int argc, char** argv)
 	theFileInfo = firstReadWrite(P0, sockfd);
 	tokenHandler = createTokenHandlerStruct(theFileInfo, response);
 	tokenHandler->sock = sockfd;
-		// pass token if peer zero
-	if (P0 == 1)
+	pthread_create(&threadBB, NULL, &bbOptions, theFileInfo);
+	printf("theFileInfo->tokenFlag = %d\n",theFileInfo->tokenFlag);
+	while (1) 
+	{
+		if (theFileInfo->tokenFlag == 0)
+		{
+			printf("if\n");
+			if (receiveToken(tokenHandler->sock, tokenHandler->theFileInfo, tokenHandler->neighborInfo) < 0)
+			{
+				fprintf(stderr, "error in receiving token\n");
+				exit (-1);
+			}
+
+		}
+		else
+		{
+			printf("else\n");
+			while (theFileInfo->tokenFlag == 1)
+			{	
+				pthread_mutex_lock(&mainLock);
+				if (theFileInfo->tokenFlag == 0)
+				{	
+					printf("I went from 1 to 0, triggering passToken yo momma\n");
+					if (passToken(tokenHandler->sock, tokenHandler->theFileInfo, tokenHandler->neighborInfo) < 0)
+					{
+						fprintf(stderr, "error in passing token\n");
+						exit (-1);
+					}
+				}
+				pthread_mutex_unlock(&mainLock);
+			}
+		}
+	}
+	// pass token if peer zero
+	/*if (P0 == 1)
 	{
 		if (passToken(tokenHandler->sock, tokenHandler->theFileInfo, tokenHandler->neighborInfo) < 0)
 		{
@@ -86,7 +120,8 @@ int main(int argc, char** argv)
 			exit (-1);
 		}
 	}
-
+	*/
+	/*
 	int i = 0;
 	while (i < 3)
 	{
@@ -108,7 +143,7 @@ int main(int argc, char** argv)
 		}
 		i++;
 	}
-
+	*/
 	/*
 	theFileInfo = firstReadWrite(P0, sockfd);
 	printf("after first read write\n");
@@ -118,7 +153,7 @@ int main(int argc, char** argv)
 	printf("back from thread\n");
 	handleTokenWork(tokenHandlerInfo);
 	//pthread_create(&threadToken, NULL, &handleTokenWork, tokenHandlerInfo); // token passing thread
-	pthread_join(threadBB, (void **)NULL);
+	pthread_join(threadBB, (void *)NULL);
 	//pthread_join(threadToken, NULL);
 	*/
 
@@ -132,6 +167,7 @@ int main(int argc, char** argv)
 			receiveToken(theFileInfo, &response[0]);
 	}
 	*/
+	pthread_join(threadBB, (void *)NULL);
 	closeSocket(sockfd);
 	return 0;
 }

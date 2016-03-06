@@ -232,7 +232,6 @@ int receiveToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbo
 {
 	socklen_t addr_size = sizeof(neighbor[0]);
 	ssize_t len = recvfrom(sockfd, thisFileInfo, sizeof(thisFileInfo), 0, (struct sockaddr *) &neighbor[0], &addr_size); 
-	
 	thisFileInfo->tokenFlag = 1;
 	printf("Received token, count now = %d.\n", thisFileInfo->count);
 	return len;
@@ -273,6 +272,7 @@ void *bbOptions(void *blah)
 		printf("For list press 3\n");
 		printf("For exit press 4\n");
 		scanf("%d", &option);
+
 		if(option == 1)
 			appendFile(threadFileInfo);
 		else if(option == 2)
@@ -326,8 +326,9 @@ void appendFile(fileInfoP theInfo)
 		fprintf(stderr, "error closing file\n");
 		exit (-1);
 	}
-	pthread_mutex_unlock(&lock);
 	theInfo->tokenFlag = 0;
+	pthread_mutex_unlock(&lock);
+	
 }
 
 char *getMessage(fileInfoP thisFileInfo)

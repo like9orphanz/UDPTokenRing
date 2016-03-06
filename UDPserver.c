@@ -96,7 +96,6 @@ int main(int argc, char** argv)
 	printf("made it\n");
 	assignPeerZero(ls, clientAddress, numberHosts);
 	
-	close(ls);
 	return(EXIT_SUCCESS);
 }
 /*

@@ -26,10 +26,7 @@ int main(int argc, char** argv)
 	fileInfoP theFileInfo;
 	tokenHandlerStructP tokenHandler = 0x00;
 
-<<<<<<< HEAD
 	pthread_mutex_t mainLock;
-=======
->>>>>>> master
 	pthread_t threadBB, threadToken;
 	pthread_attr_t attr1, attr2;
 	pthread_attr_init (&attr1);
@@ -64,7 +61,6 @@ int main(int argc, char** argv)
 		exit (1);
 	}
 	if (getAllPeerInfo(sockfd, response, 256) < 0)
-<<<<<<< HEAD
 	{
 		closeSocket(sockfd);
 		exit(1);
@@ -148,26 +144,6 @@ int main(int argc, char** argv)
 		i++;
 	}
 	*/
-=======
-	{
-		closeSocket(sockfd);
-		exit(1);
-	}
-
-	P0 = amIPeerZero(sockfd, &P0Response, 256);
-	theFileInfo = firstReadWrite(P0, sockfd);
-	tokenHandler = createTokenHandlerStruct(theFileInfo, response);
-	tokenHandler->sock = sockfd;
-
-	// pass token if peer zero
-	if (P0 == 1)
-	{
-		passToken(tokenHandler->sock, tokenHandler->theFileInfo, &tokenHandler->neighborInfo[1]);
-	}
-	else
-		receiveToken(tokenHandler->sock, tokenHandler->theFileInfo, &tokenHandler->neighborInfo[0]);
-
->>>>>>> master
 	/*
 	theFileInfo = firstReadWrite(P0, sockfd);
 	printf("after first read write\n");
@@ -175,16 +151,10 @@ int main(int argc, char** argv)
 	tokenHandlerInfo->sock = sockfd;
 	pthread_create(&threadBB, NULL, &bbOptions, theFileInfo); // bulletin board thread
 	printf("back from thread\n");
-<<<<<<< HEAD
 	handleTokenWork(tokenHandlerInfo);
 	//pthread_create(&threadToken, NULL, &handleTokenWork, tokenHandlerInfo); // token passing thread
 	pthread_join(threadBB, (void *)NULL);
 	//pthread_join(threadToken, NULL);
-=======
-	pthread_create(&threadToken, NULL, &handleTokenWork, tokenHandlerInfo); // token passing thread
-	pthread_join(threadBB, NULL);
-	pthread_join(threadToken, NULL);
->>>>>>> master
 	*/
 
 	/*
@@ -197,10 +167,7 @@ int main(int argc, char** argv)
 			receiveToken(theFileInfo, &response[0]);
 	}
 	*/
-<<<<<<< HEAD
 	pthread_join(threadBB, (void *)NULL);
-=======
->>>>>>> master
 	closeSocket(sockfd);
 	return 0;
 }

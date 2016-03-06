@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 		closeSocket(sockfd);
 		exit(1);
 	}
-	printf("commit reverted\n");
+
 	P0 = amIPeerZero(sockfd, &P0Response, 256);
 	theFileInfo = firstReadWrite(P0, sockfd);
 	tokenHandler = createTokenHandlerStruct(theFileInfo, response);

@@ -71,12 +71,26 @@ int main(int argc, char** argv)
 	tokenHandler->sock = sockfd;
 
 	// pass token if peer zero
+	
+	printf("sock = %d\n", tokenHandler->sock);
+	printf("flag = %d\n", theFileInfo->tokenFlag);
+	printf("count = %d\n", theFileInfo->count);
 	if (P0 == 1)
 	{
-		passToken(tokenHandler->sock, tokenHandler->theFileInfo, &tokenHandler->neighborInfo[1]);
+		if((passToken(tokenHandler->sock, theFileInfo, &tokenHandler->neighborInfo[1])) < 0)
+		{
+			fprintf(stderr, "error passing token\n");
+			exit(-1);
+		}
 	}
 	else
-		receiveToken(tokenHandler->sock, tokenHandler->theFileInfo, &tokenHandler->neighborInfo[0]);
+	{	
+		if((receiveToken(tokenHandler->sock, tokenHandler->theFileInfo, &tokenHandler->neighborInfo[0])) < 0)
+		{	
+			fprintf(stderr, "error receiving token\n");
+			exit(-1);
+		}
+	}
 
 	/*
 	theFileInfo = firstReadWrite(P0, sockfd);

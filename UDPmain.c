@@ -86,6 +86,29 @@ int main(int argc, char** argv)
 			exit (-1);
 		}
 	}
+
+	int i = 0;
+	while (i < 3)
+	{
+		if (tokenHandler->theFileInfo->tokenFlag == 1)
+		{
+			if (passToken(tokenHandler->sock, tokenHandler->theFileInfo, tokenHandler->neighborInfo) < 0)
+			{
+				fprintf(stderr, "error in passing token\n");
+				exit (-1);
+			}
+		}
+		else
+		{
+			if (receiveToken(tokenHandler->sock, tokenHandler->theFileInfo, tokenHandler->neighborInfo) < 0)
+			{
+				fprintf(stderr, "error in receiving token\n");
+				exit (-1);
+			}
+		}
+		i++;
+	}
+
 	/*
 	theFileInfo = firstReadWrite(P0, sockfd);
 	printf("after first read write\n");

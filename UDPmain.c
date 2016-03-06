@@ -28,6 +28,10 @@ int main(int argc, char** argv)
 	fileInfoP theFileInfo;
 	tokenHandlerStructP tokenHandler = 0x00;
 
+<<<<<<< HEAD
+=======
+	pthread_mutex_t mainLock;
+>>>>>>> PeerThreads
 	pthread_t threadBB, threadToken;
 	pthread_attr_t attr1, attr2;
 	pthread_attr_init (&attr1);
@@ -62,6 +66,7 @@ int main(int argc, char** argv)
 		exit (1);
 	}
 	if (getAllPeerInfo(sockfd, response, 256) < 0)
+<<<<<<< HEAD
 	{
 		closeSocket(sockfd);
 		exit(1);
@@ -98,6 +103,91 @@ int main(int argc, char** argv)
 		}
 	}
 
+=======
+	{
+		closeSocket(sockfd);
+		exit(1);
+	}
+
+	P0 = amIPeerZero(sockfd, &P0Response, 256);
+	theFileInfo = firstReadWrite(P0, sockfd);
+	tokenHandler = createTokenHandlerStruct(theFileInfo, response);
+	tokenHandler->sock = sockfd;
+	pthread_create(&threadBB, NULL, &bbOptions, theFileInfo);
+	printf("theFileInfo->tokenFlag = %d\n",theFileInfo->tokenFlag);
+	while (1) 
+	{
+		if (theFileInfo->tokenFlag == 0)
+		{
+			printf("if\n");
+			if (receiveToken(tokenHandler->sock, tokenHandler->theFileInfo, tokenHandler->neighborInfo) < 0)
+			{
+				fprintf(stderr, "error in receiving token\n");
+				exit (-1);
+			}
+
+		}
+		else
+		{
+			printf("else\n");
+			while (theFileInfo->tokenFlag == 1)
+			{	
+				pthread_mutex_lock(&mainLock);
+				if (theFileInfo->tokenFlag == 0)
+				{	
+					printf("I went from 1 to 0, triggering passToken yo momma\n");
+					if (passToken(tokenHandler->sock, tokenHandler->theFileInfo, tokenHandler->neighborInfo) < 0)
+					{
+						fprintf(stderr, "error in passing token\n");
+						exit (-1);
+					}
+				}
+				pthread_mutex_unlock(&mainLock);
+			}
+		}
+	}
+	// pass token if peer zero
+	/*if (P0 == 1)
+	{
+		if (passToken(tokenHandler->sock, tokenHandler->theFileInfo, tokenHandler->neighborInfo) < 0)
+		{
+			fprintf(stderr, "error in passing token\n");
+			exit (-1);
+		}
+	}
+	else
+	{
+		if (receiveToken(tokenHandler->sock, tokenHandler->theFileInfo, tokenHandler->neighborInfo) < 0)
+		{
+			fprintf(stderr, "error in receiving token\n");
+			exit (-1);
+		}
+	}
+	*/
+	/*
+	int i = 0;
+	while (i < 3)
+	{
+		if (tokenHandler->theFileInfo->tokenFlag == 1)
+		{
+			if (passToken(tokenHandler->sock, tokenHandler->theFileInfo, tokenHandler->neighborInfo) < 0)
+			{
+				fprintf(stderr, "error in passing token\n");
+				exit (-1);
+			}
+		}
+		else
+		{
+			if (receiveToken(tokenHandler->sock, tokenHandler->theFileInfo, tokenHandler->neighborInfo) < 0)
+			{
+				fprintf(stderr, "error in receiving token\n");
+				exit (-1);
+			}
+		}
+		i++;
+	}
+	*/
+>>>>>>> PeerThreads
 	/*
 	theFileInfo = firstReadWrite(P0, sockfd);
 	printf("after first read write\n");
@@ -105,9 +195,16 @@ int main(int argc, char** argv)
 	tokenHandlerInfo->sock = sockfd;
 	pthread_create(&threadBB, NULL, &bbOptions, theFileInfo); // bulletin board thread
 	printf("back from thread\n");
+<<<<<<< HEAD
 	pthread_create(&threadToken, NULL, &handleTokenWork, tokenHandlerInfo); // token passing thread
 	pthread_join(threadBB, NULL);
 	pthread_join(threadToken, NULL);
+=======
+	handleTokenWork(tokenHandlerInfo);
+	//pthread_create(&threadToken, NULL, &handleTokenWork, tokenHandlerInfo); // token passing thread
+	pthread_join(threadBB, (void *)NULL);
+	//pthread_join(threadToken, NULL);
+>>>>>>> PeerThreads
 	*/
 
 	/*
@@ -120,6 +217,10 @@ int main(int argc, char** argv)
 			receiveToken(theFileInfo, &response[0]);
 	}
 	*/
+<<<<<<< HEAD
+=======
+	pthread_join(threadBB, (void *)NULL);
+>>>>>>> PeerThreads
 	closeSocket(sockfd);
 	return 0;
 }

@@ -18,7 +18,11 @@
 #include <netdb.h>
 #include <pthread.h>
 #define BUFFERSIZE 256
+<<<<<<< HEAD
 int private = 1;
+=======
+
+>>>>>>> PeerThreads
 /*
  *	This program is a TCPclient that communicates to TCPserver. This program uses TCPmain 
  *		to send a certain ammount of messages and tests to see if those messages
@@ -29,7 +33,7 @@ int private = 1;
 /*
  * return value - the socket identifier or a negative number indicating the error 
  * 		  for creating a socket
- *
+ * dalfijadsofijasd
  */
 int createSocket()
 {
@@ -220,6 +224,7 @@ void readWrite(fileInfoP thisFileInfo)
 
 	pthread_create(&thread, NULL, &bbOptions, thisFileInfo);
 	pthread_join(thread, NULL);
+<<<<<<< HEAD
 }
 
 int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
@@ -271,11 +276,54 @@ void *handleTokenWork(void *kablah)
 			exit (-1);
 		}
 	}
+=======
+>>>>>>> PeerThreads
 }
 
+int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
+{	
+	printf("passing token to IP: %s, Port No: %d\n", inet_ntoa(neighbor[1].sin_addr), htons(neighbor[1].sin_port));
+	int a = sendto(sockfd, &thisFileInfo, sizeof(thisFileInfo), 0, (const struct sockaddr *) &neighbor[1], sizeof(neighbor[1]));
+	thisFileInfo->tokenFlag = 0;
+	return a;
+}
+
+int receiveToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
+{
+	socklen_t addr_size = sizeof(neighbor[0]);
+	ssize_t len = recvfrom(sockfd, thisFileInfo, sizeof(thisFileInfo), 0, (struct sockaddr *) &neighbor[0], &addr_size); 
+	thisFileInfo->tokenFlag = 1;
+	printf("Received token, count now = %d.\n", thisFileInfo->count);
+	return len;
+}
+/*
+void *handleTokenWork(void *kablah)
+{
+	tokenHandlerStructP tokenStruct = (tokenHandlerStructP) kablah;
+	printf("in handleTokenWork\n");
+	while (1)
+	{
+		while (tokenStruct->theFileInfo->tokenFlag == 1)
+		{
+			//allow bb handler to do what it wants while holding token
+			if (tokenStruct->theFileInfo->tokenFlag == 0)
+			{
+				printf("token flag set = 0\n");
+				passToken(tokenStruct);
+			}
+		}
+		if (receiveToken(tokenStruct->sock, tokenStruct->theFileInfo, &tokenStruct->neighborInfo[0]) < 0)
+		{
+			fprintf(stderr, "error in receiving token!\n");
+			exit (-1);
+		}
+	}
+}
+*/
 void *bbOptions(void *blah)
 {
 	fileInfoP threadFileInfo = (fileInfoP)blah;
+<<<<<<< HEAD
 	int option = 0;
 	fflush(stdin);
 	printf("For write press 1\n");
@@ -285,6 +333,18 @@ void *bbOptions(void *blah)
 	scanf("%d", &option);
 
 	while(option != 4)
+=======
+	fflush(stdin);
+
+	while (1) {
+		int option = 0;
+		printf("For write press 1\n");
+		printf("For read press 2\n");
+		printf("For list press 3\n");
+		printf("For exit press 4\n");
+		scanf("%d", &option);
+
+>>>>>>> PeerThreads
 		if(option == 1)
 			appendFile(threadFileInfo);
 		else if(option == 2)
@@ -292,10 +352,15 @@ void *bbOptions(void *blah)
 		else if(option == 3)
 			listFile(threadFileInfo);
 		else
+<<<<<<< HEAD
 			exitFile();
 
 	printf("threadFileInfo->tokenFlag = %d\n",threadFileInfo->tokenFlag);
 	pthread_exit(NULL);
+=======
+			exitFile(threadFileInfo);
+	}
+>>>>>>> PeerThreads
 }
 	
 void appendFile(fileInfoP theInfo)
@@ -322,6 +387,7 @@ void appendFile(fileInfoP theInfo)
 
 	char *buffer = getMessage();
 	while (1)
+<<<<<<< HEAD
 	{
 		if (private == 1)
 		{
@@ -345,6 +411,29 @@ void appendFile(fileInfoP theInfo)
 	private = 0;
 	pthread_mutex_unlock(&lock);
 	printf("unlocked\n");
+=======
+	{
+		if (theInfo->tokenFlag == 1)
+		{
+			pthread_mutex_lock(&lock);
+			fprintf(fp, "<message n=%d>\n", theInfo->count);
+			fprintf(fp, "%s", buffer);
+			fprintf(fp, "</message>\n");
+			printf("Wrote to file\n");
+			theInfo->count++;
+			break;
+		}
+	}
+
+	if (fclose(fp) != 0)
+	{
+		fprintf(stderr, "error closing file\n");
+		exit (-1);
+	}
+	theInfo->tokenFlag = 0;
+	pthread_mutex_unlock(&lock);
+	
+>>>>>>> PeerThreads
 }
 
 char *getMessage(fileInfoP thisFileInfo)
@@ -417,8 +506,12 @@ void listFile(fileInfoP thisFileInfo)
 {
 	printf("list\n");
 }
-void exitFile()
+void exitFile(fileInfoP thisFileInfo)
 {
 	printf("exit\n");
+<<<<<<< HEAD
 	exit (1);
+=======
+	exit(1);
+>>>>>>> PeerThreads
 }

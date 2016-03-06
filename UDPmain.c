@@ -77,7 +77,7 @@ int main(int argc, char** argv)
 	printf("count = %d\n", theFileInfo->count);
 	if (P0 == 1)
 	{
-		if((passToken(tokenHandler->sock, theFileInfo, &tokenHandler->neighborInfo[1])) < 0)
+		if((passToken(tokenHandler->sock, theFileInfo, tokenHandler->neighborInfo)) < 0)
 		{
 			fprintf(stderr, "error passing token\n");
 			exit(-1);
@@ -85,7 +85,11 @@ int main(int argc, char** argv)
 	}
 	else
 	{	
-		if((receiveToken(tokenHandler->sock, tokenHandler->theFileInfo, &tokenHandler->neighborInfo[0])) < 0)
+		printf("I am no peer 0\n");
+		printf("sock = %d\n", tokenHandler->sock);
+		printf("flag = %d\n", theFileInfo->tokenFlag);
+		printf("count = %d\n", theFileInfo->count);
+		if((receiveToken(tokenHandler->sock, theFileInfo, tokenHandler->neighborInfo)) < 0)
 		{	
 			fprintf(stderr, "error receiving token\n");
 			exit(-1);

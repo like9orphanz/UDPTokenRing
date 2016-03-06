@@ -225,8 +225,8 @@ void readWrite(fileInfoP thisFileInfo)
 int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
 {	
 	socklen_t addr_size = sizeof(struct sockaddr_in *);
-	printf("passing token to IP: %s, Port No: %d\n", inet_ntoa(neighbor->sin_addr), htons(neighbor->sin_port));
-	int a = sendto(sockfd, (const void *)&thisFileInfo, sizeof(thisFileInfo), 0, (struct sockaddr *)neighbor, (socklen_t)sizeof(struct sockaddr_in));
+	printf("passing token to IP: %s, Port No: %d\n", inet_ntoa(neighbor[1].sin_addr), htons(neighbor[1].sin_port));
+	int a = sendto(sockfd, (const void *)&thisFileInfo, sizeof(thisFileInfo), 0, (struct sockaddr *)&neighbor[1], sizeof(neighbor[1]));
 
 	printf("addr_size = %d\n", addr_size);
 	printf("neighbor info = %s, and port = %d\n", inet_ntoa(neighbor->sin_addr), htons(neighbor->sin_port));	
@@ -237,8 +237,11 @@ int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
 
 int receiveToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
 {
-	socklen_t addr_size = sizeof(neighbor);
-	ssize_t len = recvfrom(sockfd, (void *)thisFileInfo, sizeof(thisFileInfo), 0, (struct sockaddr *)&neighbor, &addr_size); 
+	printf("recv from ip = %s, and port = %d\n", inet_ntoa(neighbor[0].sin_addr), htons(neighbor[0].sin_port));
+	socklen_t addr_size = sizeof(neighbor[0]);
+	printf("Trying to recieve\n");
+	printf("addr_size = %d\n", addr_size);
+	ssize_t len = recvfrom(sockfd, (void *)thisFileInfo, sizeof(thisFileInfo), 0, NULL, NULL);
 	private = 0;
 		printf("Received token, count now = %d\n", thisFileInfo->count);
 

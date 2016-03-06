@@ -9,7 +9,10 @@
  * UDPclient.h
  */
 
+#include <netinet/in.h>
+
 typedef struct fileInfo *fileInfoP;
+typedef struct tokenHandlerStruct *tokenHandlerStructP;
 
 struct fileInfo
 {
@@ -17,14 +20,34 @@ struct fileInfo
 	int count;
 };
 
+struct tokenHandlerStruct
+{
+	fileInfoP theFileInfo;
+	struct sockaddr_in *neighborInfo;
+	int sock;
+};
+
 int createSocket();
-
-int sendRequest(int, char *, char *, int);
-
-void sendResponse(char *);
-
+int sendRequest(int, char * request, char *, int);
+int receiveResponse(int, struct sockaddr_in *, int);
+void printResponse(struct sockaddr_in *);
 int closeSocket(int);
-
-void *bbOptions();
+int getAllPeerInfo(int, struct sockaddr_in *, int);
+int amIPeerZero(int, struct sockaddr_in *, int);
+void createFile();
+void removeFile();
+int doIHoldTheToken(char *);
+void appendFile(fileInfoP);
+fileInfoP firstReadWrite(int, int);
+void readWrite(fileInfoP);
+int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor);
+int receiveToken(int, fileInfoP, struct sockaddr_in *);
+void *handleTokenWork(void *);
+tokenHandlerStructP createTokenHandlerStruct(fileInfoP, struct sockaddr_in *);
+char * getMessage();
+void * bbOptions();
+void readFile(fileInfoP);
+void listFile(fileInfoP);
+void exitFile();
 
 #endif

@@ -13,10 +13,6 @@
  *    <hostname> IP address or name of a host that runs the server
  *    <portnum> the numeric port number on which the server listens
  */
-int receiveResponse(int sockFd, struct sockaddr_in *response, int size);
-void printResponse(struct sockaddr_in *response);
-int amIPeerZero(int sockFd, struct sockaddr_in *response, int size);
-fileInfoP firstReadWrite(int P0, int sockfd, int count);
 
  /*
   * A note
@@ -25,7 +21,17 @@ int main(int argc, char** argv)
 {
 	int  sockfd, P0;
 	struct sockaddr_in response[2];
+	struct sockaddr_in P0Response;
 	char message[256];
+	fileInfoP theFileInfo;
+	tokenHandlerStructP tokenHandlerInfo = 0x00;
+
+	pthread_t threadBB, threadToken;
+	pthread_attr_t attr1, attr2;
+	pthread_attr_init (&attr1);
+	pthread_attr_init (&attr2);
+	pthread_attr_setdetachstate(&attr1, PTHREAD_CREATE_DETACHED);
+	pthread_attr_setdetachstate(&attr2, PTHREAD_CREATE_DETACHED);
 
 	if (argc != 4) 
 	{
@@ -53,28 +59,34 @@ int main(int argc, char** argv)
 		closeSocket (sockfd);
 		exit (1);
 	}
-
-	if (receiveResponse(sockfd, &response, 256) < 0) 
+	if (getAllPeerInfo(sockfd, response, 256) < 0)
 	{
-		closeSocket (sockfd);
-		exit (1);
+		closeSocket(sockfd);
+		exit(1);
 	}
+
+	P0 = amIPeerZero(sockfd, &P0Response, 256);
 	
-	// display response from server
-	printResponse(&response);
-	
-	if (receiveResponse(sockfd, &response, 256) < 0) 
+	theFileInfo = firstReadWrite(P0, sockfd);
+	printf("after first read write\n");
+	tokenHandlerInfo = createTokenHandlerStruct(theFileInfo, response);
+	tokenHandlerInfo->sock = sockfd;
+	pthread_create(&threadBB, NULL, &bbOptions, theFileInfo); // bulletin board thread
+	printf("back from thread\n");
+	pthread_create(&threadToken, NULL, &handleTokenWork, tokenHandlerInfo); // token passing thread
+	pthread_join(threadBB, NULL);
+	pthread_join(threadToken, NULL);
+
+	/*
+	while(1)
 	{
-		closeSocket (sockfd);
-		exit (1);
+		readWrite(theFileInfo);
+		if (theFileInfo->tokenFlag == 1)
+			passToken(theFileInfo->count, response);
+		else
+			receiveToken(theFileInfo, &response[0]);
 	}
-	printResponse(&response);
-
-	int count = 1;
-
-	P0 = amIPeerZero(sockfd, &response, 256);
-	firstReadWrite(P0, sockfd, count);
-	
+	*/
 	closeSocket(sockfd);
 	return 0;
 }

@@ -18,30 +18,13 @@
 #include <netdb.h>
 #include <pthread.h>
 #define BUFFERSIZE 256
-
-
+int private = 1;
 /*
  *	This program is a TCPclient that communicates to TCPserver. This program uses TCPmain 
  *		to send a certain ammount of messages and tests to see if those messages
  *		fit the criteria that the server replies with
  *
  */
-int receiveResponse(int sockFd, struct sockaddr_in *, int size);
-void printResponse(struct sockaddr_in *);
-int amIPeerZero(int sockFd, struct sockaddr_in *, int size);
-int getAllPeerInfo(int sockFd, struct sockaddr_in *, int size);
-int doIHoldTheToken(char *flag);
-void createFile();
-void removeFile();
-void appendFile(fileInfoP thisInfo);
-char * getMessage();
-fileInfoP firstReadWrite(int P0, int sockFd, int count);
-void * bbOptions();
-void readFile();
-void listFile();
-void exitFile();
-void waitAndAppend();
-char * topWrapFunction(int howManyWrites);
 
 /*
  * return value - the socket identifier or a negative number indicating the error 
@@ -136,16 +119,16 @@ int closeSocket(int sockFD)
 	return errorCheck;
 }
 
-int getAllPeerInfo(int sockFd, struct sockaddr_in *respone, int size)
-{
-	if (receiveRepsonse(sockFd, response[0], size) < 0)
+int getAllPeerInfo(int sockFd, struct sockaddr_in *response, int size)
+{	
+	if (receiveResponse(sockFd, &response[0], size) < 0)
 		return -1;
-	if (receiveResponse(sockFd, response[1], size) < 0)
+	if (receiveResponse(sockFd, &response[1], size) < 0)
 		return -1;
 	printf("At 0:\n");
-	printResponse(response[0]);
+	printResponse(&response[0]);
 	printf("At 1:\n");
-	printResponse(response[1]);
+	printResponse(&response[1]);
 	return 0;
 }
 
@@ -154,12 +137,12 @@ int getAllPeerInfo(int sockFd, struct sockaddr_in *respone, int size)
  *  
  * Returns -1 on error, 0 on not peer 0, and 1 for peer 0.
  */
-int amIPeerZero(int sockFD, struct sockaddr_in *response, int size)
+int amIPeerZero(int sockFD, struct sockaddr_in *P0Response, int size)
 {	
 	char buffer[256];
 	bzero(buffer, 256);
 	socklen_t addr_size;
-	ssize_t len = recvfrom(sockFD, buffer, sizeof(buffer), 0, (struct sockaddr*)response, &addr_size);
+	ssize_t len = recvfrom(sockFD, buffer, sizeof(buffer), 0, (struct sockaddr*)P0Response, &addr_size);
 	
 	if (len < 0) return -1;
 	
@@ -184,23 +167,15 @@ void removeFile(char *fileName)
 	system(command);
 }
 
-
 int doIHoldTheToken(char *flag)
 {
 	if (strcmp("no", flag) == 0)
-	{
 		return 1;
-	}
 	else return 0;
 }
 
-fileInfoP firstReadWrite(int P0, int sockfd, int count)
-{
-	pthread_t thread;
-	pthread_attr_t attr;
-	pthread_attr_init (&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-
+fileInfoP firstReadWrite(int P0, int sockfd)
+{	
 	fileInfoP thisFileInfo = (fileInfoP) malloc(sizeof(struct fileInfo));
 
 	if (P0 < 0)
@@ -211,45 +186,107 @@ fileInfoP firstReadWrite(int P0, int sockfd, int count)
 	}
 	else if (P0 == 0) 
 	{	
+		private = 0;
 		thisFileInfo->tokenFlag = 0;
+		thisFileInfo->count = 0;
 	}
 	else 
 	{	
+		private = 1;
 		printf("I have token\n");
 		thisFileInfo->tokenFlag = 1;
 		thisFileInfo->count = 1;
 		createFile();
 	}
+	
+	return thisFileInfo;
+}
+
+tokenHandlerStructP createTokenHandlerStruct(fileInfoP thisFileInfo, struct sockaddr_in *response)
+{
+		tokenHandlerStructP thisTokenHandlerStruct = (tokenHandlerStructP) malloc(sizeof(struct tokenHandlerStruct));
+		thisTokenHandlerStruct->theFileInfo = thisFileInfo;
+		thisTokenHandlerStruct->neighborInfo = response;
+
+		return thisTokenHandlerStruct;
+}
+
+void readWrite(fileInfoP thisFileInfo)
+{
+	pthread_t thread;
+	pthread_attr_t attr;
+	pthread_attr_init (&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
 	pthread_create(&thread, NULL, &bbOptions, thisFileInfo);
 	pthread_join(thread, NULL);
-	
-	return thisFileInfo;
+}
+
+int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
+{	
+	printf("passing token to IP: %s, Port No: %d\n", inet_ntoa(neighbor[0].sin_addr), htons(neighbor[0].sin_port));
+	int a = sendto(sockfd, (void *)thisFileInfo, sizeof(thisFileInfo), 0, (const struct sockaddr *)&neighbor[0], sizeof(neighbor[0]));
+
+	return a;
+}
+
+int receiveToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
+{
+	socklen_t addr_size = sizeof(neighbor[1]);
+	ssize_t len = recvfrom(sockfd, (void *)thisFileInfo, sizeof(thisFileInfo), 0, (struct sockaddr *)&neighbor[1], &addr_size); 
+	private = 0;
+		printf("Received token, count now = %d\n", thisFileInfo->count);
+	return len;
+}
+
+void *handleTokenWork(void *kablah)
+{
+	tokenHandlerStructP tokenStruct = (tokenHandlerStructP) kablah;
+	printf("in handleTokenWork\n");
+	while (1)
+	{
+		while (private == 1)
+		{
+			//allow bb handler to do what it wants while holding token
+			if (private == 0)
+			{
+				 printf("tokenStruct->theFileInfo->tokenFlag = %d\n", private);
+				passToken(tokenStruct->sock, tokenStruct->theFileInfo, &tokenStruct->neighborInfo[1]);
+			}
+		}
+		if ((receiveToken(tokenStruct->sock, tokenStruct->theFileInfo, &tokenStruct->neighborInfo[0])) < 0)
+		{
+			fprintf(stderr, "error in receiving token!\n");
+			exit (-1);
+		}
+	}
 }
 
 void *bbOptions(void *blah)
 {
 	fileInfoP threadFileInfo = (fileInfoP)blah;
-
 	int option = 0;
 	fflush(stdin);
-		printf("For write press 1\n");
-		printf("For read press 2\n");
-		printf("For list press 3\n");
-		printf("For exit press 4\n");
-		scanf("%d", &option);
+	printf("For write press 1\n");
+	printf("For read press 2\n");
+	printf("For list press 3\n");
+	printf("For exit press 4\n");
+	scanf("%d", &option);
 
-	if(option == 1)
-		appendFile(threadFileInfo);
-	else if(option == 2)
-		readFile();
-	else if(option == 3)
-		listFile();
-	else
-		exitFile();
-	pthread_exit(0);
+	while(option != 4)
+		if(option == 1)
+			appendFile(threadFileInfo);
+		else if(option == 2)
+			readFile(threadFileInfo);
+		else if(option == 3)
+			listFile(threadFileInfo);
+		else
+			exitFile();
+
+	printf("threadFileInfo->tokenFlag = %d\n",threadFileInfo->tokenFlag);
+	pthread_exit(NULL);
 }
-
+	
 void appendFile(fileInfoP theInfo)
 {
 	pthread_mutex_t lock;
@@ -273,37 +310,52 @@ void appendFile(fileInfoP theInfo)
 	}
 
 	char *buffer = getMessage();
-
-	if (theInfo->tokenFlag == 1)
+	while (1)
 	{
-		pthread_mutex_lock(&lock);
-		fprintf(fp, "<message n=%d>\n", theInfo->count);
-		fprintf(fp, "%s", buffer);
-		fprintf(fp, "</message>\n");
-		printf("Wrote to file\n");
+		if (private == 1)
+		{
+			pthread_mutex_lock(&lock);
+			fprintf(fp, "<message n=%d>\n", theInfo->count);
+			fprintf(fp, "%s", buffer);
+			fprintf(fp, "</message>\n");
+			printf("Wrote to file\n");
+			theInfo->count++;
+			break;
+		}
 	}
+	printf("broke out of loop\n");
 	
-	fclose(fp);
+	if (fclose(fp) != 0)
+	{
+		fprintf(stderr, "error closing file\n");
+		exit (-1);
+	}
+	printf("closed file\n");
+	private = 0;
 	pthread_mutex_unlock(&lock);
+	printf("unlocked\n");
 }
 
-char *getMessage()
+char *getMessage(fileInfoP thisFileInfo)
 {	
 	char c;
 	char *message = (char *) malloc(256 * sizeof(char));
+
 	c = getchar();
 	printf("Enter the message you'd like to post on the bulletin board%c", c);
-	fgets(message, 1024, stdin);
+	fgets(message, 256, stdin);
 	message[255] = '\0';
 	return message;
 }
 
-void readFile()
+void readFile(fileInfoP thisFileInfo)
 {	
 	char temp;
 	int messageNumber;
 	char *messageNumChar = malloc(sizeof(char) * 500);
 	char *message = malloc(sizeof(char) * 500); 
+	thisFileInfo->tokenFlag = 0;
+
 	message = "<message n=";
 	FILE *fp;
 	
@@ -344,13 +396,18 @@ void readFile()
 			}		
 		}
 	}
-
+	if (fclose(fp) != 0)
+	{
+		fprintf(stderr,"error closing file\n");
+		exit(-1);
+	}
 }
-void listFile()
+void listFile(fileInfoP thisFileInfo)
 {
 	printf("list\n");
 }
 void exitFile()
 {
 	printf("exit\n");
+	exit (1);
 }

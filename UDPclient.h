@@ -40,7 +40,11 @@ int doIHoldTheToken(char *);
 void appendFile(fileInfoP);
 fileInfoP firstReadWrite(int, int);
 void readWrite(fileInfoP);
+<<<<<<< HEAD
 int passToken(int, fileInfoP, struct sockaddr_in *);
+=======
+int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor);
+>>>>>>> master
 int receiveToken(int, fileInfoP, struct sockaddr_in *);
 void *handleTokenWork(void *);
 tokenHandlerStructP createTokenHandlerStruct(fileInfoP, struct sockaddr_in *);
@@ -48,6 +52,12 @@ char * getMessage();
 void * bbOptions();
 void readFile(fileInfoP);
 void listFile(fileInfoP);
+<<<<<<< HEAD
 void exitFile(fileInfoP);
 
 #endif
+=======
+void exitFile();
+
+#endif
+>>>>>>> master

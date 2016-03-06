@@ -1,6 +1,10 @@
 <message n=1>
+<<<<<<< HEAD
 hey there
 </message>
 <message n=32685>
 df;ijasdfiasdf
+=======
+dsaflkadsflkja
+>>>>>>> master
 </message>

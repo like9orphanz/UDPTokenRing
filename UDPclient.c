@@ -18,7 +18,11 @@
 #include <netdb.h>
 #include <pthread.h>
 #define BUFFERSIZE 256
+<<<<<<< HEAD
 
+=======
+int private = 1;
+>>>>>>> master
 /*
  *	This program is a TCPclient that communicates to TCPserver. This program uses TCPmain 
  *		to send a certain ammount of messages and tests to see if those messages
@@ -186,11 +190,13 @@ fileInfoP firstReadWrite(int P0, int sockfd)
 	}
 	else if (P0 == 0) 
 	{	
+		private = 0;
 		thisFileInfo->tokenFlag = 0;
 		thisFileInfo->count = 0;
 	}
 	else 
 	{	
+		private = 1;
 		printf("I have token\n");
 		thisFileInfo->tokenFlag = 1;
 		thisFileInfo->count = 1;
@@ -218,6 +224,49 @@ void readWrite(fileInfoP thisFileInfo)
 
 	pthread_create(&thread, NULL, &bbOptions, thisFileInfo);
 	pthread_join(thread, NULL);
+<<<<<<< HEAD
+=======
+}
+
+int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
+{	
+	printf("passing token to IP: %s, Port No: %d\n", inet_ntoa(neighbor[0].sin_addr), htons(neighbor[0].sin_port));
+	int a = sendto(sockfd, (void *)thisFileInfo, sizeof(thisFileInfo), 0, (const struct sockaddr *)&neighbor[0], sizeof(neighbor[0]));
+
+	return a;
+}
+
+int receiveToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
+{
+	socklen_t addr_size = sizeof(neighbor[1]);
+	ssize_t len = recvfrom(sockfd, (void *)thisFileInfo, sizeof(thisFileInfo), 0, (struct sockaddr *)&neighbor[1], &addr_size); 
+	private = 0;
+		printf("Received token, count now = %d\n", thisFileInfo->count);
+	return len;
+}
+
+void *handleTokenWork(void *kablah)
+{
+	tokenHandlerStructP tokenStruct = (tokenHandlerStructP) kablah;
+	printf("in handleTokenWork\n");
+	while (1)
+	{
+		while (private == 1)
+		{
+			//allow bb handler to do what it wants while holding token
+			if (private == 0)
+			{
+				 printf("tokenStruct->theFileInfo->tokenFlag = %d\n", private);
+				passToken(tokenStruct->sock, tokenStruct->theFileInfo, &tokenStruct->neighborInfo[1]);
+			}
+		}
+		if ((receiveToken(tokenStruct->sock, tokenStruct->theFileInfo, &tokenStruct->neighborInfo[0])) < 0)
+		{
+			fprintf(stderr, "error in receiving token!\n");
+			exit (-1);
+		}
+	}
+>>>>>>> master
 }
 
 int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
@@ -263,6 +312,7 @@ void *handleTokenWork(void *kablah)
 void *bbOptions(void *blah)
 {
 	fileInfoP threadFileInfo = (fileInfoP)blah;
+<<<<<<< HEAD
 	fflush(stdin);
 
 	while (1) {
@@ -273,6 +323,17 @@ void *bbOptions(void *blah)
 		printf("For exit press 4\n");
 		scanf("%d", &option);
 
+=======
+	int option = 0;
+	fflush(stdin);
+	printf("For write press 1\n");
+	printf("For read press 2\n");
+	printf("For list press 3\n");
+	printf("For exit press 4\n");
+	scanf("%d", &option);
+
+	while(option != 4)
+>>>>>>> master
 		if(option == 1)
 			appendFile(threadFileInfo);
 		else if(option == 2)
@@ -280,8 +341,15 @@ void *bbOptions(void *blah)
 		else if(option == 3)
 			listFile(threadFileInfo);
 		else
+<<<<<<< HEAD
 			exitFile(threadFileInfo);
 	}
+=======
+			exitFile();
+
+	printf("threadFileInfo->tokenFlag = %d\n",threadFileInfo->tokenFlag);
+	pthread_exit(NULL);
+>>>>>>> master
 }
 	
 void appendFile(fileInfoP theInfo)
@@ -308,6 +376,7 @@ void appendFile(fileInfoP theInfo)
 
 	char *buffer = getMessage();
 	while (1)
+<<<<<<< HEAD
 	{
 		if (theInfo->tokenFlag == 1)
 		{
@@ -329,6 +398,31 @@ void appendFile(fileInfoP theInfo)
 	theInfo->tokenFlag = 0;
 	pthread_mutex_unlock(&lock);
 	
+=======
+	{
+		if (private == 1)
+		{
+			pthread_mutex_lock(&lock);
+			fprintf(fp, "<message n=%d>\n", theInfo->count);
+			fprintf(fp, "%s", buffer);
+			fprintf(fp, "</message>\n");
+			printf("Wrote to file\n");
+			theInfo->count++;
+			break;
+		}
+	}
+	printf("broke out of loop\n");
+	
+	if (fclose(fp) != 0)
+	{
+		fprintf(stderr, "error closing file\n");
+		exit (-1);
+	}
+	printf("closed file\n");
+	private = 0;
+	pthread_mutex_unlock(&lock);
+	printf("unlocked\n");
+>>>>>>> master
 }
 
 char *getMessage(fileInfoP thisFileInfo)
@@ -404,5 +498,9 @@ void listFile(fileInfoP thisFileInfo)
 void exitFile(fileInfoP thisFileInfo)
 {
 	printf("exit\n");
+<<<<<<< HEAD
 	exit(1);
+=======
+	exit (1);
+>>>>>>> master
 }

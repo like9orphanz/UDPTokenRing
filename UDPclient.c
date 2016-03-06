@@ -224,6 +224,7 @@ int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
 {	
 	printf("passing token to IP: %s, Port No: %d\n", inet_ntoa(neighbor[1].sin_addr), htons(neighbor[1].sin_port));
 	int a = sendto(sockfd, &thisFileInfo, sizeof(thisFileInfo), 0, (const struct sockaddr *) &neighbor[1], sizeof(neighbor[1]));
+	thisFileInfo->tokenFlag = 0;
 	return a;
 }
 

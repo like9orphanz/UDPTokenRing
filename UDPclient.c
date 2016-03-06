@@ -231,7 +231,7 @@ int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
 int receiveToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
 {
 	socklen_t addr_size = sizeof(neighbor[0]);
-	ssize_t len = recvfrom(sockfd, thisFileInfo, sizeof(thisFileInfo), 0, (struct sockaddr *) &neighbor[0], &addr_size); 
+	ssize_t len = recvfrom(sockfd, thisFileInfo, sizeof(thisFileInfo), MSG_WAITALL, (struct sockaddr *) &neighbor[0], &addr_size); 
 	thisFileInfo->tokenFlag = 1;
 	printf("Received token, count now = %d.\n", thisFileInfo->count);
 	return len;

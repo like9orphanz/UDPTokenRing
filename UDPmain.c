@@ -72,6 +72,7 @@ int main(int argc, char** argv)
 	tokenHandler->sock = sockfd;
 	pthread_create(&threadBB, NULL, &bbOptions, theFileInfo);
 	printf("theFileInfo->tokenFlag = %d\n",theFileInfo->tokenFlag);
+	int a = 0;
 	while (1) 
 	{
 		if (theFileInfo->tokenFlag == 0)
@@ -87,7 +88,7 @@ int main(int argc, char** argv)
 		else
 		{
 			printf("else\n");
-			while (theFileInfo->tokenFlag == 1)
+			while (!a)
 			{	
 				pthread_mutex_lock(&mainLock);
 				if (theFileInfo->tokenFlag == 0)
@@ -98,9 +99,11 @@ int main(int argc, char** argv)
 						fprintf(stderr, "error in passing token\n");
 						exit (-1);
 					}
+					a = 1;
 				}
 				pthread_mutex_unlock(&mainLock);
 			}
+			a = 0;
 		}
 	}
 	// pass token if peer zero

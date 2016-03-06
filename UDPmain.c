@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 	printf("back from thread\n");
 	handleTokenWork(tokenHandlerInfo);
 	//pthread_create(&threadToken, NULL, &handleTokenWork, tokenHandlerInfo); // token passing thread
-	pthread_join(threadBB, NULL);
+	pthread_join(threadBB, (void **)NULL);
 	//pthread_join(threadToken, NULL);
 
 	/*

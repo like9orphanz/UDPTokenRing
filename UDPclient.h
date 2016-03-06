@@ -48,6 +48,6 @@ char * getMessage();
 void * bbOptions();
 void readFile(fileInfoP);
 void listFile(fileInfoP);
-void exitFile();
+void exitFile(fileInfoP);
 
 #endif

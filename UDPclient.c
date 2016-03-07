@@ -18,7 +18,7 @@
 #include <netdb.h>
 #include <pthread.h>
 #define BUFFERSIZE 256
-
+int counter = 1;
 /*
  *	This program is a TCPclient that communicates to TCPserver. This program uses TCPmain 
  *		to send a certain ammount of messages and tests to see if those messages
@@ -187,7 +187,7 @@ fileInfoP firstReadWrite(int P0, int sockfd)
 	else if (P0 == 0) 
 	{	
 		thisFileInfo->tokenFlag = 0;
-		thisFileInfo->count = 0;
+		thisFileInfo->count = 1;
 	}
 	else 
 	{	
@@ -222,8 +222,8 @@ void readWrite(fileInfoP thisFileInfo)
 
 int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
 {	
-	printf("passing token to IP: %s, Port No: %d\n", inet_ntoa(neighbor[1].sin_addr), htons(neighbor[1].sin_port));
-	int a = sendto(sockfd, &thisFileInfo, sizeof(thisFileInfo), 0, (const struct sockaddr *) &neighbor[1], sizeof(neighbor[1]));
+	printf("passing token to IP: %s, Port No: %d, count = %d\n", inet_ntoa(neighbor[1].sin_addr), htons(neighbor[1].sin_port), thisFileInfo->count);
+	int a = sendto(sockfd, (void *) &thisFileInfo->count, sizeof(&thisFileInfo->count), 0, (const struct sockaddr *) &neighbor[1], sizeof(neighbor[1]));
 	thisFileInfo->tokenFlag = 0;
 	return a;
 }
@@ -231,7 +231,7 @@ int passToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
 int receiveToken(int sockfd, fileInfoP thisFileInfo, struct sockaddr_in *neighbor)
 {
 	socklen_t addr_size = sizeof(neighbor[0]);
-	ssize_t len = recvfrom(sockfd, thisFileInfo, sizeof(thisFileInfo), MSG_WAITALL, (struct sockaddr *) &neighbor[0], &addr_size); 
+	ssize_t len = recvfrom(sockfd, (void *)&thisFileInfo->count, sizeof(&thisFileInfo->count), MSG_WAITALL, (struct sockaddr *) &neighbor[0], &addr_size); 
 	thisFileInfo->tokenFlag = 1;
 	printf("Received token, count now = %d.\n", thisFileInfo->count);
 	return len;
@@ -288,7 +288,7 @@ void appendFile(fileInfoP theInfo)
 {
 	pthread_mutex_t lock;
 	FILE *fp;
-	
+	printf("theInfo->count = %d when writing to file\n", theInfo->count);
 	if(theInfo->count > 1)
 	{
 		if((fp = fopen("filenameBulletinBoard.txt", "a")) == NULL)

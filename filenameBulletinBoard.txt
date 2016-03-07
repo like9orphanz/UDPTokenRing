@@ -1,12 +1,9 @@
 <message n=1>
-pass it along
+first write
 </message>
-<message n=32641>
-pass it along
+<message n=2>
+second write
 </message>
-<message n=32660>
-writing agaaaainnn
-</message>
-<message n=1708173504>
-more wriitiinnggg
+<message n=3>
+third write
 </message>
